@@ -1,18 +1,18 @@
 package main
 
 import (
-	"net/http"
-	"log"
-	"io/ioutil"
 	"encoding/json"
+	"io/ioutil"
+	"log"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 type AgentStateUpdate struct {
-  Name string
-  State string
-  Url string
+	Name  string
+	State string
+	Url   string
 }
 
 type AgentStateResult struct {
@@ -36,7 +36,7 @@ func setupRouter() *gin.Engine {
 		req, err := http.NewRequest("GET", "https://develop.opencast.org/capture-admin/agents/test.json", nil)
 		req.SetBasicAuth(username, passwd)
 		resp, err := client.Do(req)
-		if err != nil{
+		if err != nil {
 			log.Fatal(err)
 		}
 		bodyText, err := ioutil.ReadAll(resp.Body)
