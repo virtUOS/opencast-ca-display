@@ -1,0 +1,29 @@
+name: Go fmt and build
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: [ '1.19', '1.20', '1.21.x' ]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Go ${{ matrix.go-version }}
+      uses: actions/setup-go@v4
+      with:
+        go-version: ${{ matrix.go-version }}
+
+    - name: Run go fmt
+      run: go fmt
+
+    - name: Check formatting
+      run: git diff --quiet
+
+    - name: Build project
+      run: go build
