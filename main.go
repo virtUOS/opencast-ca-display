@@ -9,14 +9,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type AgentStateUpdate struct {
-	Name  string
-	State string
-	Url   string
-}
-
 type AgentStateResult struct {
-	Update AgentStateUpdate `json:"agent-state-update"`
+	Update struct {
+		Name  string
+		State string
+		Url   string
+	} `json:"agent-state-update"`
 }
 
 var db = make(map[string]string)
