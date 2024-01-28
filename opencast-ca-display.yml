@@ -1,0 +1,13 @@
+opencast:
+  # URL of the Opencast server to connect to
+  url: https://develop.opencast.org
+
+  # Uername and password of user with sufficient access to read agent status
+  username: admin
+  password: opencast
+
+  # Capture agent to show the status for
+  agent: test
+
+# IP address and port to bind to
+listen: 127.0.0.1:8080
