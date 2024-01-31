@@ -17,8 +17,10 @@
 package main
 
 import (
+	"embed"
 	"encoding/json"
 	"errors"
+	"io/fs"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -48,7 +50,12 @@ type Config struct {
 	Listen string
 }
 
-var config Config
+var (
+	config Config
+
+	//go:embed assets
+	res embed.FS
+)
 
 func loadConfig(configPath string) (*Config, error) {
 	// Open config file
@@ -78,9 +85,15 @@ func loadConfig(configPath string) (*Config, error) {
 func setupRouter() *gin.Engine {
 	r := gin.Default()
 
+	// Use assets/index.html for /
+	r.GET("/", func(c *gin.Context) {
+		c.Request.URL.Path = "/assets/"
+		r.HandleContext(c)
+	})
+
 	// Static assets
-	r.StaticFile("/", "./assets/index.html")
-	r.Static("/assets", "./assets")
+	assets, _ := fs.Sub(res, "assets")
+	r.StaticFS("/assets", http.FS(assets))
 
 	// Status
 	r.GET("/status", func(c *gin.Context) {
