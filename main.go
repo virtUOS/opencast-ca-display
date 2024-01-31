@@ -39,12 +39,23 @@ type AgentStateResult struct {
 	} `json:"agent-state-update"`
 }
 
+type DisplayConfig struct {
+	Text       string `json:"text"`
+	Color      string `json:"color"`
+	Background string `json:"background"`
+}
+
 type Config struct {
 	Opencast struct {
 		Url      string
 		Username string
 		Password string
 		Agent    string
+	}
+
+	Display struct {
+		Capturing DisplayConfig `json:"capturing"`
+		Idle      DisplayConfig `json:"idle"`
 	}
 
 	Listen string
@@ -94,6 +105,11 @@ func setupRouter() *gin.Engine {
 	// Static assets
 	assets, _ := fs.Sub(res, "assets")
 	r.StaticFS("/assets", http.FS(assets))
+
+	// Display Config
+	r.GET("/config", func(c *gin.Context) {
+		c.JSON(http.StatusOK, config.Display)
+	})
 
 	// Status
 	r.GET("/status", func(c *gin.Context) {

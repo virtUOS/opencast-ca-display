@@ -9,5 +9,16 @@ opencast:
   # Capture agent to show the status for
   agent: test
 
+# display configuration
+display:
+  capturing:
+    text: Aufzeichnung läuft
+    color: white
+    background: '#ac0634'
+  idle:
+    text: Keine Aufzeichnung
+    color: black
+    background: white
+
 # IP address and port to bind to
 listen: 127.0.0.1:8080
