@@ -110,8 +110,7 @@ func setupRouter() *gin.Engine {
 		var result AgentStateResult
 		json.Unmarshal([]byte(s), &result)
 
-		capturing, _ := json.Marshal(result.Update.State == "capturing")
-		c.String(http.StatusOK, string(capturing))
+		c.JSON(http.StatusOK, result.Update.State == "capturing")
 	})
 
 	return r
@@ -123,6 +122,5 @@ func main() {
 		return
 	}
 	r := setupRouter()
-	// Listen and Server in 0.0.0.0:8080
 	r.Run(config.Listen)
 }
