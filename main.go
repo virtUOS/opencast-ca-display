@@ -119,7 +119,8 @@ func setupRouter() *gin.Engine {
 		req.SetBasicAuth(config.Opencast.Username, config.Opencast.Password)
 		resp, err := client.Do(req)
 		if err != nil {
-			log.Fatal(err)
+			c.JSON(http.StatusBadGateway, nil)
+			return
 		}
 		bodyText, err := ioutil.ReadAll(resp.Body)
 		s := string(bodyText)
