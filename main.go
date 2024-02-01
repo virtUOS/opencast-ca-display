@@ -43,6 +43,7 @@ type DisplayConfig struct {
 	Text       string `json:"text"`
 	Color      string `json:"color"`
 	Background string `json:"background"`
+	Image      string `json:"image"`
 }
 
 type Config struct {

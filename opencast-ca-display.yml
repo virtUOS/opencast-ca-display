@@ -9,16 +9,107 @@ opencast:
   # Capture agent to show the status for
   agent: test
 
-# display configuration
+# Display configuration
+# Each state configuration contains four fields:
+# - text: The text to display in that state
+# - color: The text color
+# - background: The background color
+# - image: A logo to display. This can be a URL or a base64 encoded image
 display:
   capturing:
     text: Aufzeichnung läuft
     color: white
     background: '#ac0634'
+    image: >
+      data:image/png;base64,
+      iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAMAAACahl6sAAABKVBMVEX////b
+      ///3//+s//+s//OsjG2sITSsBjSsVUSsyqG8///f//+s/9SscVisLDSs//Dz
+      ///O///A///+//+s/+3D//+slnesCTSs5rm1//+s/87i//+s98fm//+sEDSs
+      WETH//+salLp///w//+sq4ms26+sPTSse1+s8MDY//+s37K5//+sXEesFzTt
+      //+sRzbK//+sFDSstZCv//+s0aSsX0usiWqy///R//+sk3SsvJas7bys//qs
+      /+msqIWsfmasMzSsZk6soX6s/9+shWrU//+sgmas/9GsOTSs27Ks1KisKDSs
+      nX6shWasY06s+sf6//+s/+asRDaswJqs//esr4ysLzSsuZOs/sqsw5qsQDSs
+      pIKs1KusGjSs/s6sjHGsmnusTj2s/+LXn+hFAAAEGklEQVR42u3YeVPTQBgG
+      8DUvkBZK6WFVoIVCBS1VbEUEL6wKVlS0UvC+v/+HsE2yR5JNm81kmHHm+f2V
+      5M1u9sluQgpjAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+      AAAAAAAAAAAAAAAA8F+6ZHS2RVPTM7ZtZ7I0GyrOUW5+VMxPL1AhzTGS7aLo
+      U4o5292wuZKoZfghfqBMWVuRv1zxXe2KWrx6bfECg1hLYpgxgizP20FVcXIt
+      XFy4qCA1WrENgpCtsVr3+lrTFMeshDSDkG+YE4Noc9j2zLpTndcW00oyPoht
+      FGTWjrDa8KW8ntvYFDub5XSC1EquuRSC3IgK4tymm3x+mv7JS/GBj2YURFlY
+      W1RstuiW2L+9zdgd/9wvpf6U6DTa7jwZBekE1711Vz0SKG7z/arRyHaCE3kv
+      NPnyaaFd/fIYH2QxmGP4R+W+mBLGropy0SnS0F5lv1kwu8e7gYuI5zAcJOLd
+      MymIbGaJsjzWZsrLt1OlWtLFwrt84N/NK/PgbT3U55gY5BHfzClLVGn92N/d
+      7pNkYZq8g21n9yB4+ynqj0DsIDdCK2voqTxYD3e5UUyQJKtepubtdMvpBeny
+      zX3lquq7SXeBJbPv0ZGi1/SZurKIpRdEVNUVs8AP5pg+yYx5kude01HLF952
+      Wxvk8Ii3kcNU95IGYfRSk2Q/1ugV6seItwwOmDaI/PJOL8iUN4jwm/2aaZB1
+      r2FPfhTVtUEOZRuTIK/4pnqLj+XC9NTp9Rt/EuPF5d2dPGM9d+st0wZR3jom
+      QU407dmm7iA7ondKEONvlGWv4ayl9JAoSEucsCLPeO97HFzbgdH2G0339T/6
+      2ckdmwZhW27DD/x7xdIHUX5o+4OchqLO8SMz6jupINrLY1QdZJwn8y6viSQD
+      4yC82zNlOJogcuEEgoi/+av94EDPGSvJQYv2D/ihTRFZfMDsJA9S9j9kVvwg
+      /eD9ZZoDH4Plsvr12wkUtUvZdEocT3yHxgdxfqsWlOafqNWiz3K/5u/9C81W
+      FpUnumvJ6te607X1TbOU4+qvyGt5T2y8INRo07Qd7btz9nlkneSrZrR3xBok
+      3mer5jkY+yB7m/dPkj7IDzse91dOO6p8MlrFP6NDmtsLtR8f5Fe8HHwsi/ry
+      aX9UnNMXfyfJwdifwIRMCDLpQ9J1Js+/rSn/arrF1htNMWvFH7wq9KoYH2Q5
+      eN2O5jlQ18b6lTHlUidUnEoWY+ir1wP/shsfhJXkD9T8F6LhZ1F7qquOpHu5
+      HrhVPXVWTkn97VSgt/62FZZY0/33iOhe/l+Lb5X8k000WMtkiZpKH0S9QSaT
+      OeiRdiQV+jtsszv4S0ehWoGoej5se96jOgMAAAAAAAAAAAAAAAAAAAAAuBD/
+      AO9hftIMDgN8AAAAAElFTkSuQmCC
+
   idle:
     text: Keine Aufzeichnung
     color: black
     background: white
+    image: >
+      data:image/png;base64,
+      iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAMAAACahl6sAAAC2VBMVEWsBjS5
+      LVOxFUDLY4DgobLv0Nn57/L////+/Pz04OXpvsrZjqPCSWq4KlHQc4zjrLvy
+      2N/47PDfobOyGELVgpncl6q9OV7BRGevEDz57PDgo7TARGasBzWtCzjObYju
+      zdb//f389vjmtsPEUHDjrr23KVDlsb+uDTq2JU2sCDbblan79PbMaIT89/j0
+      3+W/P2Ly2uHdnK7Xip+1IUrx2N/HV3bCSmyzHkfKYX7sx9Houcb35+z35+uv
+      Ej3w1d3blKjls8G6MVfYjKHETm/QcoznuMXMZoK9Ol66L1bDTG3UgJf03uT7
+      8vW0H0n25Onbk6fXh52zGkW+PGD78/XMZ4PrxM/clandmay0IUrksb/GVnXp
+      vMnz3ePXiZ7w0dr68vSuDjv89vf9+frZj6TReJHObIfHWXfFUnK8OFyyGUPZ
+      j6PSepPWh539+/uxGEK+PmLNa4buztfZkKTqws3ltMLjq7uzHEbNaoXenbDh
+      pLW6MlfsyNLRdpDx1d3KY4Dw1Nu/QWTnucbTepP36u346u68N1zkrr3cmKvW
+      hJv9+/y5LVS9OF3z2+LLZoHgobPZjKHtytTiqLi+PWHv0tq7NFrw09u8NlvR
+      dY7fobLKX33jrbzCSWvw0tr36OznucWtCTbTfZXou8j57fD47O/ty9TZjqLw
+      0tvUf5fz3OLYip+3J0/LZYLDS23lsL/JXXuwEz+0IEm9O1/gpbbCSGr25em4
+      LVOyGkTMZYLIW3nqwczLY3/fn7GwEj3rxtDBR2m4K1KxF0LGVXSwEj7akaX4
+      6+/WhpzKYH3WhZvgpLW1Ikzrw87PcYvDS2zkr77qwMzenK725uu/PmLsydOw
+      ET2zHUfou8fcmazhprb68fO+PWDkr73FUXHv0NjET3C4LFPuzNWuDDn14ufa
+      k6fen7HIXHq3KlHsxtDBRmi2Jk7akqa5L1W+P2LgpLTAQmW6MFftyNLAQWTh
+      pre/QGP7JchAAAAFOElEQVR42u2Y+VtUVRjHT4NwZ0gDcVgKBsmFgVi0kFaK
+      TDSwRRS3CrOwqDQKM1vUzIQssj0qG8pIzTbbiaSybLHNcknbbS/MdvsLmpl7
+      3nPucM/AnGnieXqe7+eXed/zve855zv3zLn3DGMAAAAAAAAAAAAAAAAAAAAA
+      AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADg
+      f8kBWlc74gbEJxiG05V44ECbOOigpGS/aAyOT4kbEss5ug2T1PCXpCU5zcAg
+      0oXmoiZqyIhLdBqSgw/JzJI9ebKH5ljEQ4cN70cjjhFimhEYGZls9CTXSxfn
+      2cWU/H4ykndYgaFhpLDIsFM8ivc1WiEe3j9GjgiZZp9G4gwlCSUB0TNGKZb2
+      ixFDy8iRTrURo/gov3o0Zc5jko49Tmhlx8fGSF66yaAYGDnBCEe5Xz2R7s/Y
+      wLUnCW1cjG5Jr2gZqZATHz/h5MqqiaeI/NTTGDudx5OChVkjSKv+Lw1MnmLe
+      Jx0j3hqxdqaaomOaqJguq2eY4kzKz9Ca2Zk9b+RZPW5+quXXUlGrWh6pfRgZ
+      J+RZpGacTU2zz2Hn8rBuTlpwzz2v4vz6CzIvrLxI7zumuc01Uy/tk8V2I/PU
+      67wvIxdT2HCJkOU2dimzbL41uY150S6Wat7HfDMt5Ongy2xGFoTZe/oycjmF
+      C+WoV4iSK9lVod3VXl0YlZlF1MHMYLqYZ0vkgnIbvdOXkWsoXGoZ9lpqrGbL
+      7F1elxaFk0RevDyQ5PGkKSN2RpopvN4y6gpqvIGxG3NsfbasuEnbyEpee3Mg
+      ucU2/X9vRKxI64q5lRqT/Mltil4T9N6sA9zOSwPfwR08vlNp5K5WqpHTtGZq
+      I0INaySr/m6Fk3t0jdzLK7P9cZMZLmZKI5miRsdIXa9GVgXT/PvsO/swXSMl
+      fCQfY21mlLNMaeR+eYLQMfIAhdbfyGpqnMQbHhzV/tCaECMt2osrxSxcy5jP
+      jNYxpZGHZYmOkfUUTrWMWUaNj1hn0up+1OLkMV0jj/Nb0ubgT8MKtZEnwhkR
+      u84G0rMK5BVPUmh5joj3EOOpYP705MpnTOXZhUJarWuEjTcLn+PvK8EnsMLI
+      8+GMdFA6j/QXqCVB9mQ0dIr6F8VsN+Z2uYIb9DTSkkjq0jbykllY9LL5GXxb
+      URiRC6eHkQWUFr/CdfEyvomxV8Wkxdr0zqemstcoqtvMxdejN5LBl5S54xc5
+      IjfyRjB7U0y13JRLxbPD7T8BviXkJXw8+fa7JV+8G2fzvt+mhunaRtg7lp+Y
+      8S6L3Mh7gaRzlix+f2vVB4UfirQlsOVaDrrbsgdmDp8of9FNDrad4h07g107
+      PqKGNn0juwrkWEaVhpG5u6e4443wfBy8elNYvZqxkTL7pNW7e6k47Bbr+2Ds
+      U9nbGE8ERj4zIsM85XxeFEZev9mvfhFG3BqNkS9lPf/3oncjeyLzwQ997Cv1
+      CaBjV0D8ukEpfhPVP1vffkf1yfmRGPk+Ih8/iLn8OFsh7xlrihvWKMRERzQ+
+      GGukDuhJ27uRn3p+izXdtqk4t1i+05KhNr1ciHtrbOIAb2TztuHZwUf/OSIj
+      bK88oK7dti/ul3z266pm60yaf9sZes/rfda70pFqPTsNaV/XElL7e5Q2/FSa
+      f4+spFz+r0VResjN9mzc3jXalThjwh+ybVHjPl+Xy+X60+fO9CjG+Gv5fn9N
+      bdf+Ja02rbN0Tm63v7bb1/63qhYAAAAAAAAAAAAAAAAAAAAAAAAAAIDY8w9T
+      Gxe/25sMhQAAAABJRU5ErkJggg==
+
 
 # IP address and port to bind to
 listen: 127.0.0.1:8080

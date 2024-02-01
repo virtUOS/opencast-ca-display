@@ -20,9 +20,16 @@ function updateTimer() {
 	.then(capturing => {
 		console.debug('capturing', capturing)
 		const active = capturing ? config.capturing : config.idle;
+
+		// Update text
 		document.getElementById('text').innerText = active.text;
+
+		// Update colors
 		const body = document.getElementsByTagName('body')[0];
 		body.style.backgroundColor = active.background;
 		body.style.color = active.color;
+
+		// Update logo
+		document.getElementById('logo').src = active.image.replace(/\s/g, '');
 	})
 }
