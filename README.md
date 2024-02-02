@@ -2,6 +2,26 @@
 
 Software backend for displays showing the current state of Opencast capture agents.
 
+## Build & Run
+
+Make sure to install Go. This should be something like:
+
+```
+❯ dnf install golang
+```
+
+Then run the project with:
+
+```
+❯ go run main.go
+```
+
+…or build a static binary:
+
+```
+❯ go build
+```
+
 ## Example
 
 The display control in action:
