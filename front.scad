@@ -1,9 +1,9 @@
-display_x = 165;
-display_y = 100;
+display_x = 165.4;
+display_y = 100.2;
 display_z = 4;
 
-border_x = 20;
-border_y = 15;
+border_x = 20 - 0.2;
+border_y = 15 - 0.1;
 
 case_x = display_x + 2 * border_x;
 case_y = display_y + 2 * border_y;
