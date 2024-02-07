@@ -1,6 +1,6 @@
 display_x = 165;
 display_y = 100;
-display_z = 25;
+display_z = 28;
 
 border_x = 20;
 border_y = 15;
