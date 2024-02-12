@@ -21,7 +21,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io/fs"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -123,7 +123,7 @@ func setupRouter() *gin.Engine {
 			c.JSON(http.StatusBadGateway, nil)
 			return
 		}
-		bodyText, err := ioutil.ReadAll(resp.Body)
+		bodyText, err := io.ReadAll(resp.Body)
 		s := string(bodyText)
 		var result AgentStateResult
 		json.Unmarshal([]byte(s), &result)
