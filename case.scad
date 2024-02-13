@@ -36,6 +36,9 @@ keystone_z = 17;
 keystone_border_y = 41;
 keystone_border_z = 19.3;
 
+// LAN cable
+lan_cable_d = 5.6;
+
 // ########### Back ###########
 
 difference() {
@@ -102,6 +105,7 @@ difference() {
             cube([1, 10, side_z - 8]);
     }
 
+    /*
     // keystone module
     translate([-2, 10, back_z])
     union() {
@@ -110,5 +114,24 @@ difference() {
         translate([0, (keystone_border_y - keystone_y) / 2, (keystone_border_z - keystone_z) / 2])
             color("red")
             cube([30, keystone_y, keystone_z]);
+    }
+    */
+
+    // LAN cable cutout
+    for (z = [0:10]) {
+        translate([18, side + 1, side_z - lan_cable_d / 2 + z])
+            color("red")
+            rotate([90, 0, 0])
+            cylinder(side + 2, d=lan_cable_d, $fn=25);
+    }
+}
+
+// LAN cable clamp
+translate([10, 30, back_z])
+for (x = [0, 8 + lan_cable_d]) {
+    translate([x, 0, 0])
+    difference() {
+        cylinder(lan_cable_d - 1, d=8, $fn=25);
+        cylinder(lan_cable_d, d=3, $fn=25);
     }
 }
