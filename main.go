@@ -57,6 +57,7 @@ type Config struct {
 	Display struct {
 		Capturing DisplayConfig `json:"capturing"`
 		Idle      DisplayConfig `json:"idle"`
+		Unknown   DisplayConfig `json:"unknown"`
 	}
 
 	Listen string
@@ -120,7 +121,13 @@ func setupRouter() *gin.Engine {
 		req.SetBasicAuth(config.Opencast.Username, config.Opencast.Password)
 		resp, err := client.Do(req)
 		if err != nil {
+			log.Println(err)
 			c.JSON(http.StatusBadGateway, nil)
+			return
+		}
+		if resp.StatusCode != 200 {
+			log.Println(resp)
+			c.JSON(resp.StatusCode, nil)
 			return
 		}
 		bodyText, err := ioutil.ReadAll(resp.Body)
