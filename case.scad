@@ -13,6 +13,7 @@ case_y = 100 + 2 * border_y;
 // Display screw holes
 display_x = 156.9;
 display_y = 114.96;
+display_z = 7.2;
 display_left = case_x / 2 - display_x / 2;
 display_bottom = case_y / 2 - display_y / 2;
 
@@ -62,7 +63,8 @@ for (x = [0, board_x], y = [0, board_y]) {
 for (x = [0, display_x], y = [0, display_y]) {
     translate([display_left + x, display_bottom + y, back_z])
         difference() {
-            cylinder(18, d=6, $fn=25);
+            height = side_z - back_z - display_z;
+            cylinder(height, d=6, $fn=25);
             cylinder(30, d=3, $fn=25);
         }
 }
