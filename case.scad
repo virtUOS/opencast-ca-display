@@ -54,7 +54,7 @@ difference() {
 for (x = [0, board_x], y = [0, board_y]) {
     translate([board_left + x, board_bottom + y, back_z])
         difference() {
-            cylinder(4, d=6, $fn=25);
+            cylinder(3, d=6, $fn=25);
             cylinder(9, d=3, $fn=25);
         }
 }
