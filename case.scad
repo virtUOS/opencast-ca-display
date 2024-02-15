@@ -1,13 +1,10 @@
-border_x = 20;
-border_y = 15;
-
 back_z = 3;
 side_z = 28;
 
 side = 3;
 
-case_x = 165 + 2 * border_x;
-case_y = 100 + 2 * border_y;
+case_x = 205;
+case_y = 132;
 
 // Display: https://waveshare.com/7inch-hdmi-lcd-c.htm
 // Display screw holes
