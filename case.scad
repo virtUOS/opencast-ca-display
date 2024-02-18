@@ -48,6 +48,13 @@ difference() {
         translate([x + board_left, board_bottom + 16, -1])
             cube([2, board_y - 32, 8]);
     }
+
+    // board screw point in back plate
+    for (x = [0, board_x], y = [0, board_y]) {
+        translate([board_left + x, board_bottom + y, 1])
+            color("red")
+            cylinder(9, d=3, $fn=25);
+    }
 }
 
 // board screw points
@@ -55,6 +62,8 @@ for (x = [0, board_x], y = [0, board_y]) {
     translate([board_left + x, board_bottom + y, back_z])
         difference() {
             cylinder(3, d=6, $fn=25);
+            translate([0, 0, -1])
+            color("red")
             cylinder(9, d=3, $fn=25);
         }
 }
