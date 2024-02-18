@@ -69,13 +69,17 @@ for (x = [0, board_x], y = [0, board_y]) {
 }
 
 // display screw points
-for (x = [0, display_x], y = [0, display_y]) {
-    translate([display_left + x, display_bottom + y, back_z])
+for (x = [0, display_x], y = [-1, 1]) {
+    height = side_z - back_z - display_z;
+    translate([display_left + x, display_bottom + (1 + y) * display_y / 2, back_z])
         difference() {
-            height = side_z - back_z - display_z;
             cylinder(height, d=6, $fn=25);
+            color("red")
             cylinder(30, d=3, $fn=25);
         }
+    // connect screw points and side
+    translate([display_left + x, display_bottom + (1 + y) * display_y / 2 + y * 5, height / 2 + back_z])
+        cube([3, 5, height], center=true);
 }
 
 // ############ SIDE ########################
