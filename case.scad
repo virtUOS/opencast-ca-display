@@ -1,5 +1,5 @@
 back_z = 3;
-side_z = 28;
+side_z = 32;
 
 side = 3;
 
