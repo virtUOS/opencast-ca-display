@@ -128,13 +128,14 @@ difference() {
     */
 
     // LAN cable cutout
-    for (z = [0:10]) {
-        translate([18, side + 1, side_z - lan_cable_d / 2 + z])
+    for (z = [0:side_z]) {
+        translate([18, side + 1, back_z + lan_cable_d / 2 + z])
             color("red")
             rotate([90, 0, 0])
             cylinder(side + 2, d=lan_cable_d, $fn=25);
     }
 }
+
 
 // LAN cable clamp
 translate([10, 30, back_z])
@@ -142,6 +143,7 @@ for (x = [0, 8 + lan_cable_d]) {
     translate([x, 0, 0])
     difference() {
         cylinder(lan_cable_d - 1, d=8, $fn=25);
+        color("red")
         cylinder(lan_cable_d, d=3, $fn=25);
     }
 }
