@@ -134,11 +134,23 @@ difference() {
             rotate([90, 0, 0])
             cylinder(side + 2, d=lan_cable_d, $fn=25);
     }
+
+    // LAN cable cutout
+    for (z = [0:side_z]) {
+        translate([-1, 14, back_z + lan_cable_d / 2 + z])
+            color("red")
+            rotate([0, 90, 0])
+            cylinder(side + 2, d=lan_cable_d, $fn=25);
+    }
 }
+
+// better structural integrity near LAN cable cutout
+translate([0, 20, 0])
+    cube([8, 4, side_z]);
 
 
 // LAN cable clamp
-translate([10, 30, back_z])
+translate([10, 60, back_z])
 for (x = [0, 8 + lan_cable_d]) {
     translate([x, 0, 0])
     difference() {
