@@ -55,6 +55,13 @@ difference() {
             color("red")
             cylinder(9, d=3, $fn=25);
     }
+
+    // wall mount screw holes
+    for (x = [12, case_x - 12]) {
+        translate([x, case_y - side - 5, -0.1])
+            color("red")
+            cylinder(back_z + 2, d=4, $fn=30);
+    }
 }
 
 // board screw points
@@ -87,6 +94,16 @@ for (x = [0, display_x], y = [-1, 1]) {
     // connect screw points and side
     translate([display_left + x, display_bottom + (1 + y) * display_y / 2 + y * 5, height / 2 + back_z])
         cube([3, 5, height], center=true);
+}
+
+// wall mount
+for (x = [12, case_x - 12]) {
+    translate([x, case_y - side - 5, 0])
+        difference() {
+            cylinder(back_z + 1, d=10, $fn=30);
+            color("red")
+            cylinder(back_z + 2, d=4, $fn=30);
+        }
 }
 
 // ############ SIDE ########################
