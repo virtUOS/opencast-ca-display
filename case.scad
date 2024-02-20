@@ -75,8 +75,15 @@ for (x = [0, display_x], y = [-1, 1]) {
         difference() {
             cylinder(height, d=6, $fn=25);
             color("red")
-            cylinder(30, d=3, $fn=25);
+            cylinder(height + 2, d=3, $fn=25);
         }
+
+    // Pins to hold display in place
+    if ((x <= 0 && y >= 0) || (x > 0 && y < 0))
+        translate([display_left + x, display_bottom + (1 + y) * display_y / 2, back_z])
+        color("blue")
+        cylinder(height + 4, d=3, $fn=25);
+
     // connect screw points and side
     translate([display_left + x, display_bottom + (1 + y) * display_y / 2 + y * 5, height / 2 + back_z])
         cube([3, 5, height], center=true);
