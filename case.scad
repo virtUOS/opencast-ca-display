@@ -175,7 +175,7 @@ translate([0, 20, 0])
 
 
 // LAN cable clamp
-translate([10, 60, back_z])
+translate([10, 45, back_z])
 for (x = [0, 8 + lan_cable_d]) {
     translate([x, 0, 0])
     difference() {
