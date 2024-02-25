@@ -11,7 +11,8 @@ case_y = 132;
 display_x = 156.9;
 display_y = 114.96;
 display_z = 7.2;
-display_left = case_x / 2 - display_x / 2;
+// move display right by 1mm since the right bezel is 2mm wider
+display_left = case_x / 2 - display_x / 2 + 1;
 display_bottom = case_y / 2 - display_y / 2;
 
 // Board: https://waveshare.com/compute-module-4-poe-board-b.htm
