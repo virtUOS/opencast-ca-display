@@ -67,13 +67,17 @@ difference() {
 
 // board screw points
 for (x = [0, board_x], y = [0, board_y]) {
-    translate([board_left + x, board_bottom + y, back_z])
+    translate([board_left + x, board_bottom + y, back_z]) {
         difference() {
-            cylinder(3, d=6, $fn=25);
+            cylinder(2, d=6, $fn=25);
             translate([0, 0, -1])
             color("red")
             cylinder(9, d=3, $fn=25);
         }
+        if ((x <= 0 && y > 0) || (x > 0 && y <= 0))
+            color("blue")
+            cylinder(6, d=2.6, $fn=25);
+    }
 }
 
 // display screw points
