@@ -94,7 +94,7 @@ for (x = [0, display_x], y = [-1, 1]) {
     if ((x <= 0 && y >= 0) || (x > 0 && y < 0))
         translate([display_left + x, display_bottom + (1 + y) * display_y / 2, back_z])
         color("blue")
-        cylinder(height + 4, d=3, $fn=25);
+        cylinder(height + 4, d=2.8, $fn=25);
 
     // connect screw points and side
     translate([display_left + x, display_bottom + (1 + y) * display_y / 2 + y * 5, height / 2 + back_z])
