@@ -1,0 +1,15 @@
+[Unit]
+Description=Start browser
+
+Requires=startx.service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Environment=DISPLAY=:0
+ExecStart=/usr/bin/chromium-browser https://time.lkiesow.de --kiosk --noerrdialogs --disable-infobars --no-first-run --enable-features=OverlayScrollbar --start-maximized
+Restart=always
+User=lars
+
+[Install]
+WantedBy=multi-user.target

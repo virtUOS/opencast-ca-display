@@ -1,0 +1,16 @@
+[Unit]
+Description=Start X.org server
+
+After=local-fs.target
+After=network.target
+
+[Service]
+Environment=DISPLAY=:0
+ExecStart=/usr/bin/startx -- -nocursor
+ExecStartPost=/usr/bin/sleep 1
+ExecStartPost=/usr/bin/xset s off -dpms
+Restart=always
+User=lars
+
+[Install]
+WantedBy=multi-user.target
