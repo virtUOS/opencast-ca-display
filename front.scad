@@ -37,8 +37,8 @@ keystone_border_z = 19.3;
 lan_cable_d = 5.6;
 
 // display border
-display_border_left = 24;
-display_border_right = 26;
+display_border_left = 25;
+display_border_right = 25;
 display_border_bottom = 26;
 display_border_top = 18;
 display_cutout_x = case_x - display_border_left - display_border_right;
