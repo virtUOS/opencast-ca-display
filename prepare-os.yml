@@ -1,0 +1,45 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: Update packages
+      ansible.builtin.apt:
+        name: "*"
+        state: latest
+        update_cache: yes
+
+    - name: Install tools
+      ansible.builtin.apt:
+        name:
+          - chromium-browser
+          - openbox
+          - x11-xserver-utils
+          - xinit
+          - xserver-xorg
+
+    - name: Configure X.orgg server
+      ansible.builtin.lineinfile:
+        path: /etc/X11/Xwrapper.config
+        regexp: '^allowed_users='
+        line: allowed_users=anybody
+
+    - name: Install services
+      ansible.builtin.copy:
+        src: '{{ item }}.service'
+        dest: /etc/systemd/system/{{ item }}.service
+        owner: root
+        group: root
+        mode: u=rw,g=r,o=r
+      loop:
+        - browser.service
+        - startx.service
+
+    - name: Start and enable services
+      ansible.builtin.systemd_service:
+        name: '{{ item }}.service'
+        state: started
+        enabled: true
+        daemon_reload: true
+      loop:
+        - browser.service
+        - startx.service
