@@ -131,7 +131,7 @@ func setupRouter() *gin.Engine {
 			c.JSON(resp.StatusCode, nil)
 			return
 		}
-    
+
 		bodyText, err := io.ReadAll(resp.Body)
 		s := string(bodyText)
 		var result AgentStateResult
