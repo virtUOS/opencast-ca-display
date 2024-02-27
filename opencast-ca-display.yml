@@ -110,6 +110,11 @@ display:
       bdf+Ja02rbN0Tm63v7bb1/63qhYAAAAAAAAAAAAAAAAAAAAAAAAAAIDY8w9T
       Gxe/25sMhQAAAABJRU5ErkJggg==
 
+  unknown:
+    text: Unknown
+    color: white
+    background: black
+
 
 # IP address and port to bind to
 listen: 127.0.0.1:8080
