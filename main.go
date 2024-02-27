@@ -20,8 +20,8 @@ import (
 	"embed"
 	"encoding/json"
 	"errors"
+	"io"
 	"io/fs"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -125,12 +125,14 @@ func setupRouter() *gin.Engine {
 			c.JSON(http.StatusBadGateway, nil)
 			return
 		}
+
 		if resp.StatusCode != 200 {
 			log.Println(resp)
 			c.JSON(resp.StatusCode, nil)
 			return
 		}
-		bodyText, err := ioutil.ReadAll(resp.Body)
+
+		bodyText, err := io.ReadAll(resp.Body)
 		s := string(bodyText)
 		var result AgentStateResult
 		json.Unmarshal([]byte(s), &result)
