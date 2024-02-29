@@ -50,8 +50,8 @@ difference() {
     cube([case_x, case_y, 1]);
 
     // display cutout
-    translate([display_border_left, display_border_right, -0.1])
-        cube([display_cutout_x, display_cutout_y, 2]);
+    translate([display_border_left, display_border_bottom, -0.1])
+        cube([display_cutout_x, display_cutout_y, 9]);
 
     // front plate screw holes
     for (x = [4, case_x - 4], y = [4, case_y - 4]) {
