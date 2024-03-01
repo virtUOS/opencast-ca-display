@@ -12,6 +12,7 @@
       ansible.builtin.apt:
         name:
           - chromium-browser
+          - curl
           - openbox
           - x11-xserver-utils
           - xinit
@@ -31,8 +32,8 @@
         group: root
         mode: u=rw,g=r,o=r
       loop:
-        - browser.service
-        - startx.service
+        - browser
+        - startx
 
     - name: Start and enable services
       ansible.builtin.systemd_service:
@@ -41,5 +42,20 @@
         enabled: true
         daemon_reload: true
       loop:
-        - browser.service
-        - startx.service
+        - browser
+        - startx
+
+    - name: Disable unnecessary services
+      ansible.builtin.systemd_service:
+        name: '{{ item }}'
+        state: stopped
+        enabled: false
+        masked: true
+      loop:
+        - ModemManager.service
+        - avahi-daemon.service
+        - bluetooth.service
+        - hciuart.service
+        - triggerhappy.service
+        - triggerhappy.socket
+        - wpa_supplicant.service
