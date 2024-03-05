@@ -46,8 +46,9 @@ display_cutout_y = case_y - display_border_top - display_border_bottom;
 
 // ########### Front ###########
 
+//projection()
 difference() {
-    cube([case_x, case_y, 1]);
+    cube([case_x, case_y, 1.5]);
 
     // display cutout
     translate([display_border_left, display_border_bottom, -0.1])
