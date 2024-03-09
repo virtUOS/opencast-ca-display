@@ -18,7 +18,28 @@
           - xinit
           - xserver-xorg
 
-    - name: Configure X.orgg server
+    - name: Create opencast-ca-display directory
+      ansible.builtin.file:
+        path: /opt/opencast-ca-display
+        state: directory
+        mode: '0755'
+        owner: root
+        group: root
+
+    - name: Install opencast-ca-display
+      ansible.builtin.get_url:
+        url: https://{{ item.url }}
+        dest: /opt/opencast-ca-display/{{ item.name }}
+        mode: '{{ item.mode }}'
+      loop:
+        - url: github.com/virtUOS/opencast-ca-display/releases/download/0.1.0/opencast-ca-display.aarch64
+          name: opencast-ca-display
+          mode: '0755'
+        - url: raw.githubusercontent.com/virtUOS/opencast-ca-display/0.1.0/opencast-ca-display.yml
+          name: opencast-ca-display.yml
+          mode: '0644'
+
+    - name: Configure X.org server
       ansible.builtin.lineinfile:
         path: /etc/X11/Xwrapper.config
         regexp: '^allowed_users='
@@ -33,6 +54,7 @@
         mode: u=rw,g=r,o=r
       loop:
         - browser
+        - opencast-ca-display
         - startx
 
     - name: Start and enable services
@@ -43,6 +65,7 @@
         daemon_reload: true
       loop:
         - browser
+        - opencast-ca-display
         - startx
 
     - name: Disable unnecessary services

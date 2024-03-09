@@ -1,0 +1,11 @@
+[Unit]
+Description=Opencast Capture Agent Display
+
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/opencast-ca-display
+ExecStart=/opt/opencast-ca-display/opencast-ca-display
+
+[Install]
+WantedBy=multi-user.target

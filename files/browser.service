@@ -7,8 +7,8 @@ Wants=network-online.target
 
 [Service]
 Environment=DISPLAY=:0
-ExecStartPre=-/usr/bin/curl -fsI --retry 30 --retry-delay 1 --retry-all-errors https://time.lkiesow.de
-ExecStart=/usr/bin/chromium-browser https://time.lkiesow.de --kiosk --noerrdialogs --disable-infobars --no-first-run --enable-features=OverlayScrollbar --start-maximized
+ExecStartPre=-/usr/bin/curl -fsI --retry 30 --retry-delay 1 --retry-all-errors http://127.0.0.1:8080
+ExecStart=/usr/bin/chromium-browser http://127.0.0.1:8080 --kiosk --noerrdialogs --disable-infobars --no-first-run --enable-features=OverlayScrollbar --start-maximized
 Restart=always
 User=virtuos
 
