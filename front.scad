@@ -46,7 +46,8 @@ display_cutout_y = case_y - display_border_top - display_border_bottom;
 
 // ########### Front ###########
 
-//projection()
+// Uncomment the next line to generate a 2d projection
+// projection()
 difference() {
     cube([case_x, case_y, 1.5]);
 
@@ -61,3 +62,21 @@ difference() {
             cylinder(10, d=4, $fn=25);
     }
 }
+
+// friction fit
+// bottom
+translate([(case_x - display_cutout_x) / 2, side, 0])
+    color("red")
+    cube([display_cutout_x, 2, 5]);
+// top
+translate([(case_x - display_cutout_x) / 2, case_y - side - 2, 0])
+    color("red")
+    cube([display_cutout_x, 2, 5]);
+// left
+translate([side, (case_y - display_cutout_y) / 2, 0])
+    color("red")
+    cube([2, display_cutout_y, 5]);
+// right
+translate([case_x - side - 2, (case_y - display_cutout_y) / 2, 0])
+    color("red")
+    cube([2, display_cutout_y, 5]);
