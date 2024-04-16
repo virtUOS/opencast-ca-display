@@ -65,18 +65,18 @@ difference() {
 
 // friction fit
 // bottom
-translate([(case_x - display_cutout_x) / 2, side - 0.04, 0])
+translate([(case_x - display_cutout_x) / 2, side - 0.08, 0])
     color("red")
     cube([display_cutout_x, 2, 5]);
 // top
-translate([(case_x - display_cutout_x) / 2, case_y - side - 2 + 0.04, 0])
+translate([(case_x - display_cutout_x) / 2, case_y - side - 2 + 0.08, 0])
     color("red")
     cube([display_cutout_x, 2, 5]);
 // left
-translate([side - 0.04, (case_y - display_cutout_y) / 2, 0])
+translate([side - 0.08, (case_y - display_cutout_y) / 2, 0])
     color("red")
     cube([2, display_cutout_y, 5]);
 // right
-translate([case_x - side - 2 + 0.04, (case_y - display_cutout_y + 2) / 2, 0])
+translate([case_x - side - 2 + 0.08, (case_y - display_cutout_y + 4) / 2, 0])
     color("red")
-    cube([2.04, display_cutout_y - 2, 5]);
+    cube([2, display_cutout_y - 4, 5]);
