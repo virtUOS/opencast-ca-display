@@ -1,4 +1,5 @@
 var config = null;
+var calendar = updateCalendar();
 
 /**
  * Load configuration and initialize timer
@@ -8,7 +9,8 @@ fetch('/config')
 .then(cfg => {
 	config = cfg;
 	console.info('config', config)
-	setInterval(updateTimer, 2000);
+	setInterval(updateTimer, 1000);
+	setInterval(updateCalendar, 60000);
 })
 
 /**
@@ -26,7 +28,7 @@ function updateView(active) {
 	// Update logo
 	document.getElementById('logo').src = active ? config.capturing.image.replace(/\s/g, '') : config.idle.image.replace(/\s/g, '');
 
-	document.getElementById('info').innerText = getAdditionalInfo(active);
+	document.getElementById('info').innerText = parseCalendar(active);
 }
 
 
@@ -54,60 +56,12 @@ function formatSeconds(s){
 	return (new Date(s * 1000)).toUTCString().match(/(\d\d:\d\d:\d\d)/)[0];
 }
 
-function parseCalendar(calendar, active){
-	//console.log('In parseCalendar ', calendar, active);
-	// Do we want 'Startet/Endet in' or 'Startet/Endet um'?
-	let diff = 0;
-	let t = 0;
-
-	console.log('Active ', active);
-	console.log('Lenght ', calendar.length);
-
-	now = Date.now();
-	try{
-		t = active ? Date.parse(calendar[0].data.endDate) : Date.parse(calendar[0].data.startDate);
-		diff = t - now;
-		console.log('Diff ', diff, t, now);
-	} catch (TypeError) {
-		console.debug('Calendar is empty');
-	}
-
-	let remaining = null;
-	console.log('Remaining ', new Date(diff/1000).toISOString());
-	remaining = formatSeconds(diff/1000)
-	if(calendar.length > 0){
-		return (active ? config.capturing.info : config.idle.info) + ' ' + remaining;
-	} else {
-		return (active ? config.capturing.info + ' ' + remaining : 'Keine Aufzeichnung geplant');
-	}
-}
-
-function getAdditionalInfo(active) {
-	// TODO find a better cutoff (24h ?)
-		/**
-		 * [ ] Task A: Updating the textbox 
-		 * 		[x] A1: Fetch the calendar
-		 * 		[x] A2: Parse the calendar according to the capturing status (either start or end date)
-		 *  	[ ] A3: Set the correct time remaining until end/next 
-		 * 			--> Check for capturing state, not changing for some reason
-		 * [ ] Task B: Retrieving the authentication details, the agent and the url
-		 * 	 	[ ] B1: read & parse yaml
-		 * 		[ ] B2: make a request with fetch 
-		 */
-
+function setURL() {
 	time = Date.now();
 	cutoff = time + 86400000; // Cutoff is set to 24h from now
 	
-	user = 'admin';
-	pw = 'opencast';
 	url = 'https://develop.opencast.org/recordings/calendar.json';
 	agent = 'test';
-
-	calendar = null;
-
-	let headers = new Headers();
-
-	headers.set('Authorization', 'Basic ' + btoa(user + ":" + pw));
 
 	url = url + '?' + new URLSearchParams({
 		agentid: agent,
@@ -116,6 +70,58 @@ function getAdditionalInfo(active) {
 
 	console.log('Request URL ', url);
 
+	return url;
+}
+
+function parseCalendar(active){
+	//console.log('In parseCalendar ', calendar, active);
+	// Do we want 'Startet/Endet in' or 'Startet/Endet um'?
+	let diff = 0;
+	let t = 0;
+
+	console.debug('Active ', active);
+	console.debug('Lenght ', calendar.length);
+
+	now = Date.now();
+	if (calendar.length > 0){
+		t = active ? Date.parse(calendar[0].data.endDate) : Date.parse(calendar[0].data.startDate);
+		diff = t - now;
+		console.debug('Diff ', diff, t, now);
+	} else {
+		console.debug('Calendar is empty');
+	}
+
+	let remaining = null;
+	console.debug('Remaining ', new Date(diff/1000).toISOString());
+	remaining = formatSeconds(diff/1000)
+	if(calendar.length > 0){
+		return (active ? config.capturing.info : config.idle.info) + ' ' + remaining;
+	} else {
+		return (active ? config.capturing.info + ' ' + remaining : 'Keine Aufzeichnung geplant');
+	}
+}
+
+function updateCalendar() {
+	/**
+	 * [ ] Task A: Updating the textbox 
+	 * 		[x] A1: Fetch the calendar
+	 * 		[x] A2: Parse the calendar according to the capturing status (either start or end date)
+	 *  	[ ] A3: Set the correct time remaining until end/next 
+	 * 			--> Check for capturing state, not changing for some reason
+	 * [ ] Task B: Retrieving the authentication details, the agent and the url
+	 * 	 	[ ] B1: read & parse yaml
+	 * 		[ ] B2: make a request with fetch 
+	 * 
+	 * [ ] Task C: Update the Calendar every two minutes (or something like that), not every 2 seconds
+	 */
+
+	user = 'admin';
+	pw = 'opencast';
+	
+	let headers = new Headers();
+	headers.set('Authorization', 'Basic ' + btoa(user + ":" + pw));
+
+	url = setURL();
 	fetch(url, {method:'GET',
 		headers:headers,
 	})
@@ -123,12 +129,12 @@ function getAdditionalInfo(active) {
 		console.debug('Status ', response.status)
 		return response.json()})
 	.then(json => {
-		console.debug('Calendar ', json);
+		console.log('Calendar ', json);
 		calendar = json;
-		ans = parseCalendar(calendar, active);
-		console.debug('Ans ', ans);
-		return ans;
+		//ans = parseCalendar(calendar, active);
+		//console.debug('Ans ', ans);
+		//return ans;
 	});
-	console.debug('Answer ', ans);
-	return String(ans);
+	//console.debug('Answer ', ans);
+	//return String(ans);
 }
