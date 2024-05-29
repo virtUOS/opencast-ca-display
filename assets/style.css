@@ -25,3 +25,15 @@ body {
 	right: 5;
 	padding: 5vw;
 }
+
+#info {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	padding: 3vw;
+	font-size: 3vw;
+}
