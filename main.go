@@ -20,12 +20,16 @@ import (
 	"embed"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/fs"
 	"log"
 	"net/http"
 	"os"
+	"regexp"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"gopkg.in/yaml.v3"
@@ -37,6 +41,12 @@ type AgentStateResult struct {
 		State string
 		Url   string
 	} `json:"agent-state-update"`
+}
+
+type Event struct {
+	Title string
+	Start int
+	End   int
 }
 
 type DisplayConfig struct {
@@ -141,6 +151,70 @@ func setupRouter() *gin.Engine {
 		c.JSON(http.StatusOK, result.Update.State == "capturing")
 	})
 
+	r.GET("/calendar", func(c *gin.Context) {
+		client := &http.Client{}
+		cutoff := time.Now().UnixMilli() + int64(86400000)
+		url := config.Opencast.Url + "/recordings/calendar.json?agentid=" + config.Opencast.Agent + "&cutoff=" + fmt.Sprint(cutoff) + "&timestamp=true"
+		fmt.Print("\n" + url + "\n")
+		req, err := http.NewRequest("GET", url, nil)
+		req.SetBasicAuth(config.Opencast.Username, config.Opencast.Password)
+		resp, err := client.Do(req)
+		if err != nil {
+			log.Println(err)
+			c.JSON(http.StatusBadGateway, nil)
+			return
+		}
+		if resp.StatusCode != 200 {
+			log.Println(resp)
+			c.JSON(resp.StatusCode, nil)
+			return
+		}
+
+		bodyText, err := io.ReadAll(resp.Body)
+		s := string([]byte(bodyText))
+		start := regexp.MustCompile(`"startDate":[\d]+`)
+		end := regexp.MustCompile(`"endDate":[\d]+`)
+		t := regexp.MustCompile(`"event.title":"[^"]+"`)
+
+		startDates := start.FindAllString(s, -1)
+		endDates := end.FindAllString(s, -1)
+		titles := t.FindAllString(s, -1)
+
+		fmt.Println(startDates)
+		fmt.Println(endDates)
+		fmt.Println(titles)
+
+		fmt.Println(len(titles))
+
+		//reg := regexp.MustCompile(`"data":{".*?"recording":{}}`)
+		//result := reg.FindString(s)
+		//fmt.Println(result)
+		//fmt.Println("\n\n")
+		//j, err := json.Marshal(result)
+		cutoff_title := regexp.MustCompile(`"event.title":`)
+		cutoff_start := regexp.MustCompile(`"startDate":`)
+		cutoff_end := regexp.MustCompile(`"endDate":`)
+		var events []Event
+		for i := range titles {
+			start_temp := cutoff_start.ReplaceAllLiteralString(startDates[i], "")
+			start, _ := strconv.Atoi(start_temp)
+			end_temp := cutoff_end.ReplaceAllLiteralString(endDates[i], "")
+			end, _ := strconv.Atoi(end_temp)
+			e := Event{Title: cutoff_title.ReplaceAllLiteralString(titles[i], ""),
+				Start: start,
+				End:   end}
+			events = append(events, e)
+		}
+
+		if len(titles) > 0 {
+			fmt.Println(fmt.Sprint(len(titles)) + " Events planned.")
+			c.JSON(http.StatusOK, events)
+		} else {
+			fmt.Println("No Events")
+			c.JSON(http.StatusNoContent, "[]")
+		}
+	})
+
 	return r
 }
 
@@ -151,4 +225,5 @@ func main() {
 	}
 	r := setupRouter()
 	r.Run(config.Listen)
+
 }
