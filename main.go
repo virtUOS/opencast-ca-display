@@ -180,17 +180,6 @@ func setupRouter() *gin.Engine {
 		endDates := end.FindAllString(s, -1)
 		titles := t.FindAllString(s, -1)
 
-		fmt.Println(startDates)
-		fmt.Println(endDates)
-		fmt.Println(titles)
-
-		fmt.Println(len(titles))
-
-		//reg := regexp.MustCompile(`"data":{".*?"recording":{}}`)
-		//result := reg.FindString(s)
-		//fmt.Println(result)
-		//fmt.Println("\n\n")
-		//j, err := json.Marshal(result)
 		cutoff_title := regexp.MustCompile(`"event.title":`)
 		cutoff_start := regexp.MustCompile(`"startDate":`)
 		cutoff_end := regexp.MustCompile(`"endDate":`)
