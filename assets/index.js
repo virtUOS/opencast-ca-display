@@ -92,9 +92,9 @@ function parseCalendar(active){
 		console.debug('Calendar is empty');
 	}
 
-	hours = Math.floor(diff / (1000 * 60 * 60));
-	minutes = Math.floor((diff / (1000 * 60)) % 60);
-	seconds = Math.floor((diff / 1000) % 60);
+	hours = (diff > 0) ? Math.floor(diff / (1000 * 60 * 60)) : 0;
+	minutes = (diff > 0) ? Math.floor((diff / (1000 * 60)) % 60) : 0;
+	seconds = (diff > 0) ? Math.floor((diff / 1000) % 60) : 0;
 
 	hours = (hours < 10) ? '0' + hours : hours;
 	minutes = (minutes < 10) ? '0' + minutes : minutes;
