@@ -80,8 +80,8 @@ function parseCalendar(active){
 	// Do we want 'Startet/Endet in' or 'Startet/Endet um'?
 	let diff = 0;
 	let t = 0;
-
-	console.debug('Lenght ', calendar.length);
+	
+	console.debug('Calendar ', calendar);
 
 	now = Date.now();
 	if (calendar.length > 0){
@@ -90,6 +90,7 @@ function parseCalendar(active){
 		console.debug('Diff ', diff, t, now);
 	} else {
 		console.debug('Calendar is empty');
+		
 	}
 
 	hours = (diff > 0) ? Math.floor(diff / (1000 * 60 * 60)) : 0;
@@ -101,7 +102,8 @@ function parseCalendar(active){
 	seconds = (seconds < 10) ? '0' + seconds : seconds;
 
 	console.debug('Remaining ', diff/1000);
-	return calendar.length == 0 && !is_active ? 'Keine Aufzeichnung geplant' : active.info + ' ' + hours + ':' + minutes + ':' + seconds;
+	console.log(diff, calendar.length, is_active);
+	return (calendar.length == 0 && !is_active) ? 'Keine Aufzeichnung geplant' : active.info + ' ' + hours + ':' + minutes + ':' + seconds;
 }
 
 function updateCalendar() {

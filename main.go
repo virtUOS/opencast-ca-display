@@ -200,7 +200,7 @@ func setupRouter() *gin.Engine {
 			c.JSON(http.StatusOK, events)
 		} else {
 			fmt.Println("No Events")
-			c.JSON(http.StatusNoContent, "[]")
+			c.JSON(http.StatusOK, "")
 		}
 	})
 
