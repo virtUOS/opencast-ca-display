@@ -3,25 +3,6 @@ var calendar = updateCalendar();
 var is_active = null;
 
 /**
- * [ ] Task A: Updating the textbox 
- * 		[ ] A1: Fetch the calendar from the correct Endpoint
- * 		[ ] A2: Parse the calendar according to the capturing status (either start or end date)
- *  	[ ] A3: Set the correct time remaining until end/next
- * [ ] Task B: Retrieving the authentication details, the agent and the url --> Backend
- * 	 	[ ] B1: read & parse yaml (?) Or is there a better way to do things? 
- * 		[ ] B2: make a request with fetch 
- * [x] Task C: Update the Calendar every two minutes (or something like that), not every 2 seconds
- * [ ] Task D: 
- * 
- * 
- * Kommentare von Lars:
- * 	- Falls in der nächsten (Viertel-)Stunde startet, so und so viel Minuten sonst einfach mit Datum
- *  - YAML im Backend auslesen und Opencast anfragen (alle 5 Minuten oder so)
- *  - Aus boolean ein json objekt machen ? Sonst zweiten Endpunkt machen
- *  - Statusfeld etwas nach oben verschieben, damit Display besser aussieht --> bessere Verteilung
- */
-
-/**
  * Load configuration and initialize timer
  */
 fetch('/config')
