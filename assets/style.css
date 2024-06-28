@@ -19,7 +19,7 @@ body {
 	justify-content: center;
 	align-items: center;
 	position: absolute;
-	top: 0;
+	top: 5vw;
 	bottom: 0;
 	left: 5;
 	right: 5;
@@ -31,7 +31,8 @@ body {
 	justify-content: center;
 	align-items: center;
 	position: absolute;
-	bottom: 0;
+	top: 0;
+	bottom: 75;
 	left: 0;
 	right: 0;
 	padding: 3vw;
