@@ -153,9 +153,9 @@ func setupRouter() *gin.Engine {
 
 	r.GET("/calendar", func(c *gin.Context) {
 		client := &http.Client{}
+		// Cutoff is set to 24 hours from now
 		cutoff := time.Now().UnixMilli() + int64(86400000)
 		url := config.Opencast.Url + "/recordings/calendar.json?agentid=" + config.Opencast.Agent + "&cutoff=" + fmt.Sprint(cutoff) + "&timestamp=true"
-		fmt.Print("\n" + url + "\n")
 		req, err := http.NewRequest("GET", url, nil)
 		req.SetBasicAuth(config.Opencast.Username, config.Opencast.Password)
 		resp, err := client.Do(req)
@@ -196,10 +196,8 @@ func setupRouter() *gin.Engine {
 		}
 
 		if len(titles) > 0 {
-			fmt.Println(fmt.Sprint(len(titles)) + " Events planned.")
 			c.JSON(http.StatusOK, events)
 		} else {
-			fmt.Println("No Events")
 			c.JSON(http.StatusOK, "")
 		}
 	})

@@ -67,7 +67,6 @@ function updateTimer() {
 		return response.json()
 	}).then(capturing => {
 		console.log('capturing', capturing);
-		// the second condition is not used for debugging
 		if(is_active != capturing && !capturing){
 			updateCalendar()
 		}
@@ -80,8 +79,6 @@ function parseCalendar(active){
 	// Do we want 'Startet/Endet in' or 'Startet/Endet um'?
 	let diff = 0;
 	let t = 0;
-	
-	console.debug('Calendar ', calendar);
 
 	now = Date.now();
 	if (calendar.length > 0){
@@ -102,14 +99,17 @@ function parseCalendar(active){
 	seconds = (seconds < 10) ? '0' + seconds : seconds;
 
 	console.debug('Remaining ', diff/1000);
-	console.log(diff, calendar.length, is_active);
-	return (calendar.length == 0 && !is_active) ? 'Keine Aufzeichnung geplant' : active.info + ' ' + hours + ':' + minutes + ':' + seconds;
+	if (calendar.length == 0 && !is_active) {
+		return 'Keine Aufzeichnung geplant';
+	} else {
+		return (hours > 0) ? active.info + ' ' + hours + ':' + minutes + ':' + seconds : active.info + ' ' + minutes + ':' + seconds;
+	}
 }
 
 function updateCalendar() {
 	fetch("/calendar")
 	.then(response => {
-		console.debug('Status ', response.status)
+		console.debug('Calednar fetched; Status ', response.status)
 		return response.json()})
 	.then(json => {
 		console.log('Calendar ', json);
