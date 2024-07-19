@@ -55,6 +55,7 @@ type DisplayConfig struct {
 	Background string `json:"background"`
 	Image      string `json:"image"`
 	Info       string `json:"info"`
+	Empty      string `json:"none"`
 }
 
 type Config struct {
@@ -154,7 +155,7 @@ func setupRouter() *gin.Engine {
 	r.GET("/calendar", func(c *gin.Context) {
 		client := &http.Client{}
 		// Cutoff is set to 24 hours from now
-		cutoff := time.Now().UnixMilli() + int64(86400000)
+		cutoff := time.Now().UnixMilli() + 86400000
 		url := config.Opencast.Url + "/recordings/calendar.json?agentid=" + config.Opencast.Agent + "&cutoff=" + fmt.Sprint(cutoff) + "&timestamp=true"
 		req, err := http.NewRequest("GET", url, nil)
 		req.SetBasicAuth(config.Opencast.Username, config.Opencast.Password)
@@ -172,6 +173,7 @@ func setupRouter() *gin.Engine {
 
 		bodyText, err := io.ReadAll(resp.Body)
 		s := string([]byte(bodyText))
+
 		start := regexp.MustCompile(`"startDate":[\d]+`)
 		end := regexp.MustCompile(`"endDate":[\d]+`)
 		t := regexp.MustCompile(`"event.title":"[^"]+"`)

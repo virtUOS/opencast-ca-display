@@ -32,9 +32,9 @@ body {
 	align-items: center;
 	position: absolute;
 	top: 0;
-	bottom: 75;
 	left: 0;
 	right: 0;
 	padding: 3vw;
 	font-size: 3vw;
+	font-weight: 500;
 }
