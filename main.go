@@ -44,9 +44,9 @@ type AgentStateResult struct {
 }
 
 type Event struct {
-	Title string
-	Start int
-	End   int
+	Title string `json:"title"`
+	Start int    `json:"start"`
+	End   int    `json:"end"`
 }
 
 type DisplayConfig struct {
