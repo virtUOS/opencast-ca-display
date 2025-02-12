@@ -22,6 +22,7 @@ Software backend for displays showing the current state of Opencast capture agen
 3. Connect the board via USB-C cable
 4. [Run `rpiboot`](https://github.com/raspberrypi/usbboot) to mount the CM4 file system
 5. Start [Raspberry Pi Imager](https://www.raspberrypi.com/software/):
+![Raspberry Pi Imager OS.png](assets/Raspberry%20Pi%20Imager%20OS.png)
 - Device: Raspberry Pi 4
 - OS: Raspberry Pi OS Lite (64 bit)
 - Target: Select the CM4 Module Filesystem
@@ -29,6 +30,7 @@ Software backend for displays showing the current state of Opencast capture agen
     - Enable SSH public key
     - Set default SSH key
     - Disable telemetry
+![Raspberry Pi settings.png](assets/Raspberry%20Pi%20settings.png)
 6. Write image to CM 
 7. Set `boot` to `off`
 8. Boot Raspberry Pi
