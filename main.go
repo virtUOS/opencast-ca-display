@@ -27,8 +27,13 @@ import (
 	"os"
 	"strings"
 
+	// "time"
+
 	"github.com/gin-gonic/gin"
 	"gopkg.in/yaml.v3"
+
+	// "github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type AgentStateResult struct {
@@ -143,11 +148,29 @@ func setupRouter() *gin.Engine {
 	return r
 }
 
+func setupMetricsRouter() *gin.Engine {
+	r := gin.Default()
+	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
+
+	return r
+}
+
 func main() {
 	if _, err := loadConfig("opencast-ca-display.yml"); err != nil {
 		log.Fatal(err)
 		return
 	}
-	r := setupRouter()
-	r.Run(config.Listen)
+	// log.Println("TEST")
+	// http.Handle("/metrics", promhttp.Handler())
+	// http.ListenAndServe(":2112", nil)
+	log.Println("TEST2")
+	go func() {
+		r := setupRouter()
+
+		r.Run(config.Listen)
+	}()
+
+	r2 := setupMetricsRouter()
+
+	r2.Run("0.0.0.0:9100")
 }
