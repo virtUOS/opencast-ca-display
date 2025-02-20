@@ -20,19 +20,19 @@ import (
 	"embed"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/fs"
 	"log"
 	"net/http"
 	"os"
 	"strings"
-
-	// "time"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"gopkg.in/yaml.v3"
 
-	// "github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
@@ -50,7 +50,6 @@ type DisplayConfig struct {
 	Background string `json:"background"`
 	Image      string `json:"image"`
 }
-
 type Config struct {
 	Opencast struct {
 		Url      string
@@ -66,6 +65,11 @@ type Config struct {
 	}
 
 	Listen string
+
+	Metrics struct {
+		Prometheus bool
+		Listen     string
+	}
 }
 
 var (
@@ -73,6 +77,42 @@ var (
 
 	//go:embed assets
 	res embed.FS
+)
+
+var (
+	lastUpdate time.Time
+)
+
+type myCollector struct {
+	metric *prometheus.Desc
+}
+
+func (c *myCollector) Describe(ch chan<- *prometheus.Desc) {
+	ch <- c.metric
+}
+
+func (c *myCollector) Collect(ch chan<- prometheus.Metric) {
+	t := lastUpdate
+	s := prometheus.NewMetricWithTimestamp(t, prometheus.MustNewConstMetric(c.metric, prometheus.CounterValue, 123))
+	ch <- s
+}
+
+var (
+	timeCollector = &myCollector{
+		metric: prometheus.NewDesc(
+			"last_update",
+			"Timestamp of last update from CaptureAgent",
+			nil,
+			nil,
+		),
+	}
+)
+
+var (
+	stateCollector = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "state",
+		Help: "State of the CaptureAgent",
+	}, []string{"state"})
 )
 
 func loadConfig(configPath string) (*Config, error) {
@@ -90,11 +130,15 @@ func loadConfig(configPath string) (*Config, error) {
 	// Ensure URL does not have trailing /
 	config.Opencast.Url = strings.Trim(config.Opencast.Url, "/")
 	if config.Opencast.Url == "" {
-		return nil, errors.New("No Opencast server URL in configuration")
+		return nil, errors.New("no Opencast server URL in configuration")
 	}
 
 	if config.Listen == "" {
 		config.Listen = "127.0.0.1:8080"
+	}
+
+	if config.Metrics.Listen == "" {
+		config.Metrics.Listen = "0.0.0.0:9100"
 	}
 
 	return &config, nil
@@ -123,24 +167,43 @@ func setupRouter() *gin.Engine {
 		client := &http.Client{}
 		url := config.Opencast.Url + "/capture-admin/agents/" + config.Opencast.Agent + ".json"
 		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			log.Println(err)
+			c.JSON(http.StatusInternalServerError, nil)
+			stateCollector.WithLabelValues("internal_server_error").Set(1)
+			return
+		}
 		req.SetBasicAuth(config.Opencast.Username, config.Opencast.Password)
 		resp, err := client.Do(req)
+		lastUpdate = time.Now()
 		if err != nil {
 			log.Println(err)
 			c.JSON(http.StatusBadGateway, nil)
+			stateCollector.WithLabelValues("bad_gateway").Set(1)
 			return
 		}
 
 		if resp.StatusCode != 200 {
 			log.Println(resp)
 			c.JSON(resp.StatusCode, nil)
+			stateCollector.WithLabelValues(fmt.Sprintf("%d", resp.StatusCode)).Set(1)
 			return
 		}
 
 		bodyText, err := io.ReadAll(resp.Body)
+		if err != nil {
+			log.Println(err)
+			c.JSON(http.StatusInternalServerError, nil)
+			stateCollector.WithLabelValues("internal_server_error").Set(1)
+			return
+		}
 		s := string(bodyText)
 		var result AgentStateResult
 		json.Unmarshal([]byte(s), &result)
+		log.Println(result.Update.State)
+		// stateCollector.WithLabelValues(result.Update.State).Set(1)
+		stateCollector.Reset()
+		stateCollector.WithLabelValues(result.Update.State).Set(1)
 
 		c.JSON(http.StatusOK, result.Update.State == "capturing")
 	})
@@ -148,10 +211,14 @@ func setupRouter() *gin.Engine {
 	return r
 }
 
+func init() {
+	prometheus.MustRegister(stateCollector)
+	prometheus.MustRegister(timeCollector)
+}
+
 func setupMetricsRouter() *gin.Engine {
 	r := gin.Default()
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
-
 	return r
 }
 
@@ -160,17 +227,20 @@ func main() {
 		log.Fatal(err)
 		return
 	}
-	// log.Println("TEST")
-	// http.Handle("/metrics", promhttp.Handler())
-	// http.ListenAndServe(":2112", nil)
-	log.Println("TEST2")
-	go func() {
+	stateCollector.WithLabelValues("starting").Set(1)
+
+	if config.Metrics.Prometheus {
+		go func() {
+			r := setupRouter()
+
+			r.Run(config.Listen)
+		}()
+
+		r := setupMetricsRouter()
+
+		r.Run(config.Metrics.Listen)
+	} else {
 		r := setupRouter()
-
 		r.Run(config.Listen)
-	}()
-
-	r2 := setupMetricsRouter()
-
-	r2.Run("0.0.0.0:9100")
+	}
 }
