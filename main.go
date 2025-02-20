@@ -93,7 +93,7 @@ func (c *myCollector) Describe(ch chan<- *prometheus.Desc) {
 
 func (c *myCollector) Collect(ch chan<- prometheus.Metric) {
 	t := lastUpdate
-	s := prometheus.NewMetricWithTimestamp(t, prometheus.MustNewConstMetric(c.metric, prometheus.CounterValue, 123))
+	s := prometheus.NewMetricWithTimestamp(t, prometheus.MustNewConstMetric(c.metric, prometheus.CounterValue, float64(t.Unix())))
 	ch <- s
 }
 
