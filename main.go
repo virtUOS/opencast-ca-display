@@ -154,7 +154,10 @@ func setupRouter() *gin.Engine {
 	})
 
 	// Static assets
-	assets, _ := fs.Sub(res, "assets")
+	assets, err := fs.Sub(res, "assets")
+	if err != nil {
+		log.Fatal(err)
+	}
 	r.StaticFS("/assets", http.FS(assets))
 
 	// Display Config
@@ -199,9 +202,15 @@ func setupRouter() *gin.Engine {
 		}
 		s := string(bodyText)
 		var result AgentStateResult
-		json.Unmarshal([]byte(s), &result)
-		log.Println(result.Update.State)
-		// stateCollector.WithLabelValues(result.Update.State).Set(1)
+		json_err := json.Unmarshal([]byte(s), &result)
+
+		if json_err != nil {
+			log.Println(err)
+			c.JSON(http.StatusInternalServerError, nil)
+			stateCollector.WithLabelValues("internal_server_error").Set(1)
+			return
+		}
+
 		stateCollector.Reset()
 		stateCollector.WithLabelValues(result.Update.State).Set(1)
 
@@ -224,23 +233,19 @@ func setupMetricsRouter() *gin.Engine {
 
 func main() {
 	if _, err := loadConfig("opencast-ca-display.yml"); err != nil {
-		log.Fatal(err)
-		return
+		log.Fatalf("Failed to load configuration: %v", err)
 	}
-	stateCollector.WithLabelValues("starting").Set(1)
-
 	if config.Metrics.Prometheus {
 		go func() {
-			r := setupRouter()
-
-			r.Run(config.Listen)
+			metricsRouter := setupMetricsRouter()
+			if err := metricsRouter.Run(config.Metrics.Listen); err != nil {
+				log.Fatalf("Failed to run metrics server: %v", err)
+			}
 		}()
+	}
 
-		r := setupMetricsRouter()
-
-		r.Run(config.Metrics.Listen)
-	} else {
-		r := setupRouter()
-		r.Run(config.Listen)
+	r := setupRouter()
+	if err := r.Run(config.Listen); err != nil {
+		log.Fatalf("Failed to run server: %v", err)
 	}
 }
