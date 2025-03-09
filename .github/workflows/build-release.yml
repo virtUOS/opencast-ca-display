@@ -1,0 +1,63 @@
+name: Create new release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - '*.*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build arm64
+        env:
+          CONTAINER: 1.23.6-arm
+          ARCH: arm64
+        run: >
+          docker run
+          -v .:/go/src/github.com/virtuos/opencast-ca-display
+          -w /go/src/github.com/virtuos/opencast-ca-display
+          -e CGO_ENABLED=0
+          docker.elastic.co/beats-dev/golang-crossbuild:${CONTAINER}
+          --build-cmd "go build -o opencast-ca-display.linux-${ARCH}"
+          -p linux/${ARCH}
+
+      - name: Build armv7
+        env:
+          CONTAINER: 1.23.6-armhf
+          ARCH: armv7
+        run: >
+          docker run
+          -v .:/go/src/github.com/virtuos/opencast-ca-display
+          -w /go/src/github.com/virtuos/opencast-ca-display
+          -e CGO_ENABLED=0
+          docker.elastic.co/beats-dev/golang-crossbuild:${CONTAINER}
+          --build-cmd "go build -o opencast-ca-display.linux-${ARCH}"
+          -p linux/${ARCH}
+
+      - name: Build amd64
+        env:
+          CONTAINER: 1.23.6-main
+          ARCH: amd64
+        run: >
+          docker run
+          -v .:/go/src/github.com/virtuos/opencast-ca-display
+          -w /go/src/github.com/virtuos/opencast-ca-display
+          -e CGO_ENABLED=0
+          docker.elastic.co/beats-dev/golang-crossbuild:${CONTAINER}
+          --build-cmd "go build -o opencast-ca-display.linux-${ARCH}"
+          -p linux/${ARCH}
+
+      - run: ls -lh opencast-ca-display*
+
+      - run: file opencast-ca-display*
+
+      - name: create new release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: opencast-ca-display*
+          fail_on_unmatched_files: true
+          generate_release_notes: true
