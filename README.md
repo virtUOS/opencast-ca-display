@@ -22,21 +22,22 @@ Software backend for displays showing the current state of Opencast capture agen
 3. Connect the board via USB-C cable
 4. [Run `rpiboot`](https://github.com/raspberrypi/usbboot) to mount the CM4 file system
 5. Start [Raspberry Pi Imager](https://www.raspberrypi.com/software/):
-![Raspberry Pi Imager OS.png](assets/Raspberry%20Pi%20Imager%20OS.png)
-- Device: Raspberry Pi 4
-- OS: Raspberry Pi OS Lite (64 bit)
-- Target: Select the CM4 Module Filesystem
-- Additional settings:
-    - Enable SSH public key
-    - Set default SSH key
-    - Disable telemetry
-![Raspberry Pi settings.png](assets/Raspberry%20Pi%20settings.png)
-6. Write image to CM 
+   ![Raspberry Pi Imager OS](https://github.com/user-attachments/assets/d4ad6f07-90db-46b6-97eb-44303d7e6500)
+    - Device: Raspberry Pi 4
+    - OS: Raspberry Pi OS Lite (64 bit)
+    - Target: Select the CM4 Module Filesystem
+    - Additional settings:
+      ![Raspberry Pi settings](https://github.com/user-attachments/assets/f8f4c1f4-eea0-480f-ad4e-1bc2baea252d)
+        - Enable SSH public key
+        - Set default SSH key
+        - Disable telemetry
+6. Write image to CM
 7. Set `boot` to `off`
 8. Boot Raspberry Pi
 9. Run the Ansible playbook `prepare-os.yml`
 10. Get MAC address (e.g. `ip a` on system)
-11. Configure the `agent` setting in `/opt/opencast-ca-display/opencast-ca-display.yml` to the corresponding capture agent
+11. Configure the Opencast server and capture agent setting in
+    `/opt/opencast-ca-display/opencast-ca-display.yml`
 12. Reboot the Raspberry Pi
 
 ## Build & Run
