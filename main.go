@@ -26,6 +26,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -44,11 +46,19 @@ type AgentStateResult struct {
 	} `json:"agent-state-update"`
 }
 
+type Event struct {
+	Title string `json:"title"`
+	Start int    `json:"start"`
+	End   int    `json:"end"`
+}
+
 type DisplayConfig struct {
 	Text       string `json:"text"`
 	Color      string `json:"color"`
 	Background string `json:"background"`
 	Image      string `json:"image"`
+	Info       string `json:"info"`
+	Empty      string `json:"none"`
 }
 type Config struct {
 	Opencast struct {
@@ -215,6 +225,58 @@ func setupRouter() *gin.Engine {
 		stateCollector.WithLabelValues(result.Update.State).Set(1)
 
 		c.JSON(http.StatusOK, result.Update.State == "capturing")
+	})
+
+	r.GET("/calendar", func(c *gin.Context) {
+		client := &http.Client{}
+		// Cutoff is set to 24 hours from now
+		cutoff := time.Now().UnixMilli() + 86400000
+		url := config.Opencast.Url + "/recordings/calendar.json?agentid=" + config.Opencast.Agent + "&cutoff=" + fmt.Sprint(cutoff) + "&timestamp=true"
+		req, err := http.NewRequest("GET", url, nil)
+		req.SetBasicAuth(config.Opencast.Username, config.Opencast.Password)
+		resp, err := client.Do(req)
+		if err != nil {
+			log.Println(err)
+			c.JSON(http.StatusBadGateway, nil)
+			return
+		}
+		if resp.StatusCode != 200 {
+			log.Println(resp)
+			c.JSON(resp.StatusCode, nil)
+			return
+		}
+
+		bodyText, err := io.ReadAll(resp.Body)
+		s := string([]byte(bodyText))
+
+		start := regexp.MustCompile(`"startDate":[\d]+`)
+		end := regexp.MustCompile(`"endDate":[\d]+`)
+		t := regexp.MustCompile(`"event.title":"[^"]+"`)
+
+		startDates := start.FindAllString(s, -1)
+		endDates := end.FindAllString(s, -1)
+		titles := t.FindAllString(s, -1)
+
+		cutoff_title := regexp.MustCompile(`"event.title":`)
+		cutoff_start := regexp.MustCompile(`"startDate":`)
+		cutoff_end := regexp.MustCompile(`"endDate":`)
+		var events []Event
+		for i := range titles {
+			start_temp := cutoff_start.ReplaceAllLiteralString(startDates[i], "")
+			start, _ := strconv.Atoi(start_temp)
+			end_temp := cutoff_end.ReplaceAllLiteralString(endDates[i], "")
+			end, _ := strconv.Atoi(end_temp)
+			e := Event{Title: cutoff_title.ReplaceAllLiteralString(titles[i], ""),
+				Start: start,
+				End:   end}
+			events = append(events, e)
+		}
+
+		if len(titles) > 0 {
+			c.JSON(http.StatusOK, events)
+		} else {
+			c.JSON(http.StatusOK, "")
+		}
 	})
 
 	return r
