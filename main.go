@@ -44,11 +44,50 @@ type AgentStateResult struct {
 	} `json:"agent-state-update"`
 }
 
+type Event struct {
+	Title string `json:"title"`
+	Start int    `json:"start"`
+	End   int    `json:"end"`
+}
+
+type CalendarWorkflowProperties struct {
+	StraightToPublishing string `json:"straightToPublishing"`
+}
+
+type CalenderAgentConfig struct {
+	CaptureDeviceNames                 string `json:"capture.device.names"`
+	WorkflowDefinition                 string `json:"org.opencastproject.workflow.definition"`
+	WorkflowConfigStraightToPublishing string `json:"org.opencastproject.workflow.config.straightToPublishing"`
+	EventLocation                      string `json:"event.location"`
+	EventTitle                         string `json:"event.title"`
+}
+
+type CalendarRecording struct {
+}
+
+type CalendarData struct {
+	EventID            string                     `json:"eventId"`
+	AgentID            string                     `json:"agentId"`
+	StartDate          int                        // Verwenden Sie time.Time statt string
+	EndDate            int                        // Verwenden Sie time.Time statt string
+	Presenters         []string                   `json:"presenters"`
+	WorkflowProperties CalendarWorkflowProperties `json:"workflowProperties"`
+	AgentConfig        CalenderAgentConfig        `json:"agentConfig"`
+	Recording          CalendarRecording          `json:"recording"`
+}
+
+type CalendarEntry struct {
+	Data              CalendarData `json:"data"`
+	EpisodeDublinCore string       `json:"episode-dublincore"`
+}
+
 type DisplayConfig struct {
 	Text       string `json:"text"`
 	Color      string `json:"color"`
 	Background string `json:"background"`
 	Image      string `json:"image"`
+	Info       string `json:"info"`
+	Empty      string `json:"none"`
 }
 type Config struct {
 	Opencast struct {
@@ -215,6 +254,61 @@ func setupRouter() *gin.Engine {
 		stateCollector.WithLabelValues(result.Update.State).Set(1)
 
 		c.JSON(http.StatusOK, result.Update.State == "capturing")
+	})
+
+	r.GET("/calendar", func(c *gin.Context) {
+		client := &http.Client{}
+		// Cutoff is set to 24 hours from now
+		cutoff := time.Now().UnixMilli() + 86400000
+		url := config.Opencast.Url + "/recordings/calendar.json?agentid=" + config.Opencast.Agent + "&cutoff=" + fmt.Sprint(cutoff) + "&timestamp=true"
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			log.Println(err)
+			c.JSON(http.StatusBadGateway, nil)
+			return
+		}
+		req.SetBasicAuth(config.Opencast.Username, config.Opencast.Password)
+		resp, err := client.Do(req)
+		if err != nil {
+			log.Println(err)
+			c.JSON(http.StatusBadGateway, nil)
+			return
+		}
+		if resp.StatusCode != 200 {
+			log.Println(resp)
+			c.JSON(resp.StatusCode, nil)
+			return
+		}
+
+		bodyText, err := io.ReadAll(resp.Body)
+		if err != nil {
+			log.Println(err)
+			c.JSON(http.StatusBadGateway, nil)
+			return
+		}
+		s := string([]byte(bodyText))
+
+		var allEvents []CalendarEntry
+		json_err := json.Unmarshal([]byte(s), &allEvents)
+		if json_err != nil {
+			log.Fatal(json_err)
+		}
+
+		var events []Event
+		for _, eventData := range allEvents {
+			start := eventData.Data.StartDate
+			end := eventData.Data.EndDate
+			title := eventData.Data.AgentConfig.EventTitle
+			e := Event{Title: title, Start: start, End: end}
+			events = append(events, e)
+		}
+
+		if len(allEvents) > 0 {
+			fmt.Println(events)
+			c.JSON(http.StatusOK, events)
+		} else {
+			c.JSON(http.StatusOK, "")
+		}
 	})
 
 	return r
