@@ -2,6 +2,44 @@
 
 Software backend for displays showing the current state of Opencast capture agents.
 
+## How to build your Capture Agent Display
+
+### List of components
+
+- Case: https://github.com/virtUOS/opencast-ca-display/tree/3d-printed-case
+- Raspberry Pi Compute Module 4: https://www.raspberrypi.com/products/compute-module-4/?variant=raspberry-pi-cm4001000
+- Touchscreen: https://www.waveshare.com/7inch-hdmi-lcd-c.htm
+- IO Board: https://www.waveshare.com/compute-module-4-poe-board-b.htm
+- Miscellaneuos:
+    - HDMI Cable: https://www.amazon.de/dp/B07R6CWPH1?th=1
+    - USB Cable: https://amazon.de/dp/B095LS6S2Y
+    - Ethernet Cable: https://www.amazon.de/ACT-Netzwerkkabel-gewinkelt-Flexibles-Datenzentren-Schwarz/dp/B0CYHG3HV2?th=1 (Alternatively, any other 90° right angled cable can be used)
+
+### Instuctions
+
+1. Put Raspberry Pi CM4 on the base board
+2. Set the `boot` switch to `on`
+3. Connect the board via USB-C cable
+4. [Run `rpiboot`](https://github.com/raspberrypi/usbboot) to mount the CM4 file system
+5. Start [Raspberry Pi Imager](https://www.raspberrypi.com/software/):
+   ![Raspberry Pi Imager OS](https://github.com/user-attachments/assets/d4ad6f07-90db-46b6-97eb-44303d7e6500)
+    - Device: Raspberry Pi 4
+    - OS: Raspberry Pi OS Lite (64 bit)
+    - Target: Select the CM4 Module Filesystem
+    - Additional settings:
+      ![Raspberry Pi settings](https://github.com/user-attachments/assets/f8f4c1f4-eea0-480f-ad4e-1bc2baea252d)
+        - Enable SSH public key
+        - Set default SSH key
+        - Disable telemetry
+6. Write image to CM
+7. Set `boot` to `off`
+8. Boot Raspberry Pi
+9. Run the Ansible playbook `prepare-os.yml`
+10. Get MAC address (e.g. `ip a` on system)
+11. Configure the Opencast server and capture agent setting in
+    `/opt/opencast-ca-display/opencast-ca-display.yml`
+12. Reboot the Raspberry Pi
+
 ## Build & Run
 
 Make sure to install Go. This should be something like:
