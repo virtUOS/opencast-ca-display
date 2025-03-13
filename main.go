@@ -185,6 +185,11 @@ func loadConfig(configPath string) (*Config, error) {
 
 func setupRouter() *gin.Engine {
 	r := gin.Default()
+	// disable all proxies
+	err := r.SetTrustedProxies(nil)
+	if err != nil {
+		log.Fatalf("Failed to set trusted proxies: %v", err)
+	}
 
 	// Use assets/index.html for /
 	r.GET("/", func(c *gin.Context) {
@@ -321,6 +326,11 @@ func init() {
 
 func setupMetricsRouter() *gin.Engine {
 	r := gin.Default()
+	// disable all proxies
+	err := r.SetTrustedProxies(nil)
+	if err != nil {
+		log.Fatalf("Failed to set trusted proxies: %v", err)
+	}
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 	return r
 }
