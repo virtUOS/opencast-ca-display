@@ -270,9 +270,9 @@ func setupRouter() *gin.Engine {
 		}
 		s := string(bodyText)
 		var result AgentStateResult
-		json_err := json.Unmarshal([]byte(s), &result)
+		jsonErr := json.Unmarshal([]byte(s), &result)
 
-		if json_err != nil {
+		if jsonErr != nil {
 			log.Println(err)
 			c.JSON(http.StatusInternalServerError, nil)
 			stateCollector.WithLabelValues("internal_server_error").Set(1)
