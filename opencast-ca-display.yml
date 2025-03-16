@@ -121,6 +121,8 @@ display:
 
 # IP address and port to bind to
 listen: 127.0.0.1:8080
+# Variable Timout (sets to 500 Miliseconds if left blank)
+timeout: 500
 
 metrics:
   # Enable Prometheus metrics

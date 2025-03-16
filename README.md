@@ -11,9 +11,9 @@ Software backend for displays showing the current state of Opencast capture agen
 - Touchscreen: https://www.waveshare.com/7inch-hdmi-lcd-c.htm
 - IO Board: https://www.waveshare.com/compute-module-4-poe-board-b.htm
 - Miscellaneuos:
-    - HDMI Cable: https://www.amazon.de/dp/B07R6CWPH1?th=1
-    - USB Cable: https://amazon.de/dp/B095LS6S2Y
-    - Ethernet Cable: https://www.amazon.de/ACT-Netzwerkkabel-gewinkelt-Flexibles-Datenzentren-Schwarz/dp/B0CYHG3HV2?th=1 (Alternatively, any other 90° right angled cable can be used)
+  - HDMI Cable: https://www.amazon.de/dp/B07R6CWPH1?th=1
+  - USB Cable: https://amazon.de/dp/B095LS6S2Y
+  - Ethernet Cable: https://www.amazon.de/ACT-Netzwerkkabel-gewinkelt-Flexibles-Datenzentren-Schwarz/dp/B0CYHG3HV2?th=1 (Alternatively, any other 90° right angled cable can be used)
 
 ### Instuctions
 
@@ -23,14 +23,14 @@ Software backend for displays showing the current state of Opencast capture agen
 4. [Run `rpiboot`](https://github.com/raspberrypi/usbboot) to mount the CM4 file system
 5. Start [Raspberry Pi Imager](https://www.raspberrypi.com/software/):
    ![Raspberry Pi Imager OS](https://github.com/user-attachments/assets/d4ad6f07-90db-46b6-97eb-44303d7e6500)
-    - Device: Raspberry Pi 4
-    - OS: Raspberry Pi OS Lite (64 bit)
-    - Target: Select the CM4 Module Filesystem
-    - Additional settings:
-      ![Raspberry Pi settings](https://github.com/user-attachments/assets/f8f4c1f4-eea0-480f-ad4e-1bc2baea252d)
-        - Enable SSH public key
-        - Set default SSH key
-        - Disable telemetry
+   - Device: Raspberry Pi 4
+   - OS: Raspberry Pi OS Lite (64 bit)
+   - Target: Select the CM4 Module Filesystem
+   - Additional settings:
+     ![Raspberry Pi settings](https://github.com/user-attachments/assets/f8f4c1f4-eea0-480f-ad4e-1bc2baea252d)
+     - Enable SSH public key
+     - Set default SSH key
+     - Disable telemetry
 6. Write image to CM
 7. Set `boot` to `off`
 8. Boot Raspberry Pi
@@ -70,6 +70,14 @@ https://github.com/virtUOS/opencast-ca-display/assets/1008395/ead22cd2-9d7a-4d26
 - The laptop is running an Opencast capture agent
 - When the laptop starts capturing video, the display shows an active recording
 
+## Ports
+
+By default this application listens on two Ports.
+| Port | Usage |
+| --- | --- |
+|:8080 | Hosting of the website shown by the display|
+|:9100 | Metrics endpoint |
+
 ## Opencast User
 
 To improve security, you can limit the access rights for the Opencast user by
@@ -86,7 +94,7 @@ To do this, first create a new security rule in your Opencast's
 <sec:intercept-url pattern="/capture-admin/**" access="ROLE_ADMIN, ROLE_CAPTURE_AGENT" />
 ```
 
-Next, go to the Opencast  REST Docs → `/user-utils` and fill out the form for
+Next, go to the Opencast REST Docs → `/user-utils` and fill out the form for
 `POST /` with data like this:
 
 - username: `ca-display`

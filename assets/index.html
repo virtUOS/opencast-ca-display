@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang=en>
 <head>
-<link rel=stylesheet type=text/css href=assets/style.css />
+<link href=assets/style.css rel=stylesheet type=text/css />
 <script src=assets/index.js></script>
 </head>
 <body>
@@ -10,5 +10,18 @@
 	<div id=text></div>
 	<div id=info></div>
 
+	<div class="network-button" id="network-button"></div>
+
+	<div class="network-popup" id="network-popup">
+	  <div class="network-popup-content">
+	    <div>Netzwerk-Informationen</div>
+	    <div id="network-status">Verbindungsstatus: <span id="connection-status">Wird geladen...</span></div>
+	    <div id="network-interfaces">
+	      <h4>Netzwerkschnittstellen</h4>
+	      <div id="interfaces-list">Wird geladen...</div>
+	    </div>
+	    <button id="close-popup">Schließen</button>
+	  </div>
+	</div>
 </body>
 </html>
