@@ -106,3 +106,13 @@ body {
 .interface-name {
   font-weight: bold;
 }
+
+.hostname-container {
+  margin-top: 8px;
+  padding: 4px 0;
+  font-size: 14px;
+}
+
+#hostname {
+  font-weight: bold;
+}

@@ -7,7 +7,7 @@ opencast:
   password: opencast
 
   # Capture agent to show the status for
-  agent: test
+  agent: pyca@pyca-test.novalocal
 
 # Display configuration
 # Each state configuration contains four fields:

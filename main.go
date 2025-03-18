@@ -94,6 +94,7 @@ type DisplayConfig struct {
 type NetworkStatus struct {
 	Interfaces []NetInterface `json:"interfaces"`
 	Connected  bool           `json:"connected"`
+	Hostname   string         `json:"hostname"`
 }
 type NetInterface struct {
 	Name   string   `json:"name"`
@@ -379,6 +380,10 @@ func setupRouter() *gin.Engine {
 			net_status.Connected = false
 		} else {
 			net_status.Connected = true
+		}
+		net_status.Hostname, err = os.Hostname()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, nil)
 		}
 		c.JSON(http.StatusOK, net_status)
 	})
