@@ -4,6 +4,7 @@ var calendar = [];
 var network_status = {
     interfaces: [],
     connected: false,
+    hostename: ""
 };
 
 /**
@@ -176,6 +177,15 @@ document.addEventListener('DOMContentLoaded', function () {
         const connectionStatus = document.getElementById('connection-status');
         connectionStatus.textContent = data.connected ? 'Verbunden' : 'Nicht verbunden';
         connectionStatus.className = data.connected ? 'connected' : 'disconnected';
+
+        // Hostname anzeigen
+        const hostnameElement = document.getElementById('hostname');
+        if (data.hostname) {
+            hostnameElement.textContent = data.hostname;
+            hostnameElement.parentElement.style.display = 'block';
+        } else {
+            hostnameElement.parentElement.style.display = 'none';
+        }
 
         // Netzwerkschnittstellen anzeigen
         const interfacesList = document.getElementById('interfaces-list');
