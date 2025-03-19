@@ -24,6 +24,7 @@ import (
 	"io"
 	"io/fs"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"strings"
@@ -44,12 +45,65 @@ type AgentStateResult struct {
 	} `json:"agent-state-update"`
 }
 
+type Event struct {
+	Title string `json:"title"`
+	Start int    `json:"start"`
+	End   int    `json:"end"`
+}
+
+type CalendarWorkflowProperties struct {
+	StraightToPublishing string `json:"straightToPublishing"`
+}
+
+type CalenderAgentConfig struct {
+	CaptureDeviceNames                 string `json:"capture.device.names"`
+	WorkflowDefinition                 string `json:"org.opencastproject.workflow.definition"`
+	WorkflowConfigStraightToPublishing string `json:"org.opencastproject.workflow.config.straightToPublishing"`
+	EventLocation                      string `json:"event.location"`
+	EventTitle                         string `json:"event.title"`
+}
+
+type CalendarRecording struct {
+}
+
+type CalendarData struct {
+	EventID            string                     `json:"eventId"`
+	AgentID            string                     `json:"agentId"`
+	StartDate          int                        // Verwenden Sie time.Time statt string
+	EndDate            int                        // Verwenden Sie time.Time statt string
+	Presenters         []string                   `json:"presenters"`
+	WorkflowProperties CalendarWorkflowProperties `json:"workflowProperties"`
+	AgentConfig        CalenderAgentConfig        `json:"agentConfig"`
+	Recording          CalendarRecording          `json:"recording"`
+}
+
+type CalendarEntry struct {
+	Data              CalendarData `json:"data"`
+	EpisodeDublinCore string       `json:"episode-dublincore"`
+}
+
 type DisplayConfig struct {
 	Text       string `json:"text"`
 	Color      string `json:"color"`
 	Background string `json:"background"`
 	Image      string `json:"image"`
+	Info       string `json:"info"`
+	Empty      string `json:"none"`
 }
+
+type NetworkStatus struct {
+	Interfaces []NetInterface `json:"interfaces"`
+	Connected  bool           `json:"connected"`
+	Hostname   string         `json:"hostname"`
+}
+
+type NetInterface struct {
+	Name   string   `json:"name"`
+	Adress []string `json:"addr"`
+	MAC    string   `json:"mac_adress"`
+	Flags  string   `json:"flags"`
+}
+
 type Config struct {
 	Opencast struct {
 		Url      string
@@ -64,7 +118,8 @@ type Config struct {
 		Unknown   DisplayConfig `json:"unknown"`
 	}
 
-	Listen string
+	Listen  string
+	Timeout int
 
 	Metrics struct {
 		Prometheus bool
@@ -141,11 +196,21 @@ func loadConfig(configPath string) (*Config, error) {
 		config.Metrics.Listen = "0.0.0.0:9100"
 	}
 
+	if config.Timeout == 0 {
+		// Timeout in Milliseconds
+		config.Timeout = 500
+	}
+
 	return &config, nil
 }
 
 func setupRouter() *gin.Engine {
 	r := gin.Default()
+	// disable all proxies
+	err := r.SetTrustedProxies(nil)
+	if err != nil {
+		log.Fatalf("Failed to set trusted proxies: %v", err)
+	}
 
 	// Use assets/index.html for /
 	r.GET("/", func(c *gin.Context) {
@@ -167,7 +232,7 @@ func setupRouter() *gin.Engine {
 
 	// Status
 	r.GET("/status", func(c *gin.Context) {
-		client := &http.Client{}
+		client := &http.Client{Timeout: time.Duration(config.Timeout * int(time.Millisecond))}
 		url := config.Opencast.Url + "/capture-admin/agents/" + config.Opencast.Agent + ".json"
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
@@ -180,9 +245,15 @@ func setupRouter() *gin.Engine {
 		resp, err := client.Do(req)
 		lastUpdate = time.Now()
 		if err != nil {
-			log.Println(err)
-			c.JSON(http.StatusBadGateway, nil)
-			stateCollector.WithLabelValues("bad_gateway").Set(1)
+			if os.IsTimeout(err) {
+				log.Println("Request timed out:", err)
+				c.JSON(http.StatusGatewayTimeout, gin.H{"error": "Request timed out"})
+				stateCollector.WithLabelValues("gateway_timeout").Set(1)
+			} else {
+				log.Println(err)
+				c.JSON(http.StatusBadGateway, gin.H{"error": "Internal server error"})
+				stateCollector.WithLabelValues("internal_server_error").Set(1)
+			}
 			return
 		}
 
@@ -202,9 +273,9 @@ func setupRouter() *gin.Engine {
 		}
 		s := string(bodyText)
 		var result AgentStateResult
-		json_err := json.Unmarshal([]byte(s), &result)
+		jsonErr := json.Unmarshal([]byte(s), &result)
 
-		if json_err != nil {
+		if jsonErr != nil {
 			log.Println(err)
 			c.JSON(http.StatusInternalServerError, nil)
 			stateCollector.WithLabelValues("internal_server_error").Set(1)
@@ -217,6 +288,108 @@ func setupRouter() *gin.Engine {
 		c.JSON(http.StatusOK, result.Update.State == "capturing")
 	})
 
+	r.GET("/calendar", func(c *gin.Context) {
+		client := &http.Client{Timeout: time.Duration(config.Timeout * int(time.Millisecond))}
+		// Cutoff is set to 24 hours from now
+		cutoff := time.Now().UnixMilli() + 86400000
+		url := config.Opencast.Url + "/recordings/calendar.json?agentid=" + config.Opencast.Agent + "&cutoff=" + fmt.Sprint(cutoff) + "&timestamp=true"
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			log.Println(err)
+			c.JSON(http.StatusBadGateway, nil)
+			return
+		}
+		req.SetBasicAuth(config.Opencast.Username, config.Opencast.Password)
+		resp, err := client.Do(req)
+		if err != nil {
+			if os.IsTimeout(err) {
+				log.Println("Request timed out:", err)
+				c.JSON(http.StatusGatewayTimeout, gin.H{"error": "Request timed out"})
+				stateCollector.WithLabelValues("gateway_timeout").Set(1)
+			} else {
+				log.Println(err)
+				c.JSON(http.StatusBadGateway, gin.H{"error": "Internal server error"})
+				stateCollector.WithLabelValues("internal_server_error").Set(1)
+			}
+			return
+		}
+		if resp.StatusCode != 200 {
+			log.Println(resp)
+			c.JSON(resp.StatusCode, nil)
+			return
+		}
+
+		bodyText, err := io.ReadAll(resp.Body)
+		if err != nil {
+			log.Println(err)
+			c.JSON(http.StatusBadGateway, nil)
+			return
+		}
+		s := string([]byte(bodyText))
+
+		var allEvents []CalendarEntry
+		json_err := json.Unmarshal([]byte(s), &allEvents)
+		if json_err != nil {
+			log.Fatal(json_err)
+		}
+
+		var events []Event
+		for _, eventData := range allEvents {
+			start := eventData.Data.StartDate
+			end := eventData.Data.EndDate
+			title := eventData.Data.AgentConfig.EventTitle
+			e := Event{Title: title, Start: start, End: end}
+			events = append(events, e)
+		}
+
+		if len(allEvents) > 0 {
+			fmt.Println(events)
+			c.JSON(http.StatusOK, events)
+		} else {
+			c.JSON(http.StatusOK, "")
+		}
+	})
+
+	r.GET("/network_info", func(c *gin.Context) {
+		var net_status NetworkStatus
+		net_interfaces, err := net.Interfaces()
+		if err != nil {
+			log.Fatalln("Network devices could not be loaded.")
+			return
+		}
+		for _, net_inter := range net_interfaces {
+			addrs, err := net_inter.Addrs()
+			var addrs_str []string
+			if err == nil {
+				for _, a := range addrs {
+					addrs_str = append(addrs_str, a.String())
+				}
+			}
+			inter := NetInterface{Name: net_inter.Name, MAC: net_inter.HardwareAddr.String(), Adress: addrs_str, Flags: net_inter.Flags.String()}
+			net_status.Interfaces = append(net_status.Interfaces, inter)
+		}
+		client := &http.Client{Timeout: time.Duration(config.Timeout * int(time.Millisecond))}
+		url := config.Opencast.Url
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			log.Println(err)
+			c.JSON(http.StatusBadGateway, nil)
+			return
+		}
+		// req.SetBasicAuth(config.Opencast.Username, config.Opencast.Password)
+		_, err = client.Do(req)
+		if err != nil {
+			net_status.Connected = false
+		} else {
+			net_status.Connected = true
+		}
+		net_status.Hostname, err = os.Hostname()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, nil)
+		}
+		c.JSON(http.StatusOK, net_status)
+	})
+
 	return r
 }
 
@@ -227,6 +400,11 @@ func init() {
 
 func setupMetricsRouter() *gin.Engine {
 	r := gin.Default()
+	// disable all proxies
+	err := r.SetTrustedProxies(nil)
+	if err != nil {
+		log.Fatalf("Failed to set trusted proxies: %v", err)
+	}
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 	return r
 }

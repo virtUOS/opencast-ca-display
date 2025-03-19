@@ -7,7 +7,7 @@ opencast:
   password: opencast
 
   # Capture agent to show the status for
-  agent: test
+  agent: pyca@pyca-test.novalocal
 
 # Display configuration
 # Each state configuration contains four fields:
@@ -54,6 +54,7 @@ display:
       HrhVPXVWTkn97VSgt/62FZZY0/33iOhe/l+Lb5X8k000WMtkiZpKH0S9QSaT
       OeiRdiQV+jtsszv4S0ehWoGoej5se96jOgMAAAAAAAAAAAAAAAAAAAAAuBD/
       AO9hftIMDgN8AAAAAElFTkSuQmCC
+    info: Aufzeichnung endet in
 
   idle:
     text: Keine Aufzeichnung
@@ -109,6 +110,8 @@ display:
       f4+spFz+r0VResjN9mzc3jXalThjwh+ybVHjPl+Xy+X60+fO9CjG+Gv5fn9N
       bdf+Ja02rbN0Tm63v7bb1/63qhYAAAAAAAAAAAAAAAAAAAAAAAAAAIDY8w9T
       Gxe/25sMhQAAAABJRU5ErkJggg==
+    info: Nächste Aufzeichnung in
+    empty: Keine Aufzeichnung geplant
 
   unknown:
     text: Unknown
@@ -118,6 +121,8 @@ display:
 
 # IP address and port to bind to
 listen: 127.0.0.1:8080
+# Variable Timout (sets to 500 Miliseconds if left blank)
+timeout: 500
 
 metrics:
   # Enable Prometheus metrics
