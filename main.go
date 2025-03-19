@@ -409,17 +409,6 @@ func setupMetricsRouter() *gin.Engine {
 	return r
 }
 
-func init() {
-	prometheus.MustRegister(stateCollector)
-	prometheus.MustRegister(timeCollector)
-}
-
-func setupMetricsRouter() *gin.Engine {
-	r := gin.Default()
-	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
-	return r
-}
-
 func main() {
 	if _, err := loadConfig("opencast-ca-display.yml"); err != nil {
 		log.Fatalf("Failed to load configuration: %v", err)
