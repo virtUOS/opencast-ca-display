@@ -96,12 +96,14 @@ type NetworkStatus struct {
 	Connected  bool           `json:"connected"`
 	Hostname   string         `json:"hostname"`
 }
+
 type NetInterface struct {
 	Name   string   `json:"name"`
 	Adress []string `json:"addr"`
 	MAC    string   `json:"mac_adress"`
 	Flags  string   `json:"flags"`
 }
+
 type Config struct {
 	Opencast struct {
 		Url      string
@@ -403,6 +405,17 @@ func setupMetricsRouter() *gin.Engine {
 	if err != nil {
 		log.Fatalf("Failed to set trusted proxies: %v", err)
 	}
+	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
+	return r
+}
+
+func init() {
+	prometheus.MustRegister(stateCollector)
+	prometheus.MustRegister(timeCollector)
+}
+
+func setupMetricsRouter() *gin.Engine {
+	r := gin.Default()
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 	return r
 }
