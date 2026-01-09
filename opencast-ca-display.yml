@@ -132,5 +132,5 @@ metrics:
 version:
   # Application version
   version: 0.1.13
-  # Installation timestamp (unix epoch). If left blank, it will be set on first run
+  # Installation timestamp (unix epoch)
   installed: 1767962682
