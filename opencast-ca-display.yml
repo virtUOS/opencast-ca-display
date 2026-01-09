@@ -130,7 +130,5 @@ metrics:
   listen: 0.0.0.0:9100
 
 version:
-  # Application version
-  version: 0.1.13
   # Installation timestamp (unix epoch)
   installed: 1767962682
