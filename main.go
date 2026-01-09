@@ -125,6 +125,11 @@ type Config struct {
 		Prometheus bool
 		Listen     string
 	}
+
+	Version struct {
+		Version   string
+		Installed int64
+	}
 }
 
 var (
@@ -170,6 +175,20 @@ var (
 	}, []string{"state"})
 )
 
+var (
+	versionCollector = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "version_info",
+		Help: "Version information of the software",
+	}, []string{"version"})
+
+	installedCollector = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "installed_timestamp",
+		Help: "Timestamp when the software was installed",
+	})
+)
+
+
+
 func loadConfig(configPath string) (*Config, error) {
 	// Open config file
 	yamlFile, err := os.ReadFile(configPath)
@@ -199,6 +218,18 @@ func loadConfig(configPath string) (*Config, error) {
 	if config.Timeout == 0 {
 		// Timeout in Milliseconds
 		config.Timeout = 500
+	}
+
+	if config.Version.Version == "" {
+		config.Version.Version = "unknown"
+	}
+
+	// Set version metric
+	versionCollector.WithLabelValues(config.Version.Version).Set(1)
+
+	// Set installed timestamp metric
+	if config.Version.Installed > 0 {
+		installedCollector.Set(float64(config.Version.Installed))
 	}
 
 	return &config, nil
@@ -396,6 +427,8 @@ func setupRouter() *gin.Engine {
 func init() {
 	prometheus.MustRegister(stateCollector)
 	prometheus.MustRegister(timeCollector)
+	prometheus.MustRegister(versionCollector)
+	prometheus.MustRegister(installedCollector)
 }
 
 func setupMetricsRouter() *gin.Engine {

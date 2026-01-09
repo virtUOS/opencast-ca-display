@@ -128,3 +128,9 @@ metrics:
   # Enable Prometheus metrics
   prometheus: true
   listen: 0.0.0.0:9100
+
+version:
+  # Application version
+  version: 0.1.13
+  # Installation timestamp (unix epoch). If left blank, it will be set on first run
+  installed: 1767962682
