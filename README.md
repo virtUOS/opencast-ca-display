@@ -102,3 +102,11 @@ Next, go to the Opencast REST Docs → `/user-utils` and fill out the form for
 - roles: `["ROLE_CAPTURE_AGENT_CALENDAR"]`
 
 You should now be able to use this new user.
+
+## Creating a Release
+
+Creating a new release now involves multiple steps:
+
+1. Decide type of release => releases are named in the following form `v(majorVersion).(minorVersion).(patchVersion)`.
+2. Set the new release number in the `main.go` file (variables named accordingly in lines 41-43).
+3. Create the new release.
