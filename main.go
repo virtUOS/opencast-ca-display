@@ -187,8 +187,6 @@ var (
 	})
 )
 
-
-
 func loadConfig(configPath string) (*Config, error) {
 	// Open config file
 	yamlFile, err := os.ReadFile(configPath)
