@@ -64,6 +64,7 @@ body {
 
 .network-popup-content {
   background-color: #fefefe;
+  color: black;
   margin: 1% auto;
   padding: 20px;
   border: 1px solid #888;
