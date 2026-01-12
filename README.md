@@ -24,10 +24,13 @@ Software backend for displays showing the current state of Opencast capture agen
 5. Start [Raspberry Pi Imager](https://www.raspberrypi.com/software/):
    ![Raspberry Pi Imager OS](https://github.com/user-attachments/assets/d4ad6f07-90db-46b6-97eb-44303d7e6500)
    - Device: Raspberry Pi 4
-   - OS: Raspberry Pi OS Lite (64 bit)
+   - OS: Raspberry Pi OS (Legacy, 64 bit) Lite
    - Target: Select the CM4 Module Filesystem
    - Additional settings:
      ![Raspberry Pi settings](https://github.com/user-attachments/assets/f8f4c1f4-eea0-480f-ad4e-1bc2baea252d)
+     - Configure hostname
+     - Set username and password
+     - Configure time zone
      - Enable SSH public key
      - Set default SSH key
      - Disable telemetry
