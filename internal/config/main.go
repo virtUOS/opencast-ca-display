@@ -6,6 +6,9 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// LoadFromFile loads the configuration from a YAML file at the given path.
+// It validates and serializes the configuration after loading.
+// Returns the loaded Config or an error if loading, parsing, validation, or serialization fails.
 func (conf *Config) LoadFromFile(path string) (*Config, error) {
 	yamlFile, err := os.ReadFile(path)
 

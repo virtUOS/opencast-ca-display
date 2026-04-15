@@ -4,6 +4,8 @@ import (
 	"errors"
 )
 
+// validate checks if the Opencast configuration has a valid URL.
+// Returns an error if the URL is empty.
 func (oc_conf *OpencastConfig) validate() error {
 	if oc_conf.URL == "" {
 		return errors.New("Opencast: No Opencast server URL in configuration")
@@ -11,18 +13,28 @@ func (oc_conf *OpencastConfig) validate() error {
 	return nil
 }
 
+// validate checks if the Display configuration is valid.
+// Currently always returns nil (no validation implemented).
 func (display_conf *DisplayConfig) validate() error {
 	return nil
 }
 
+// validate checks if the DisplayState configuration is valid.
+// Currently always returns nil (no validation implemented).
 func (disp_state_conf *DisplayStateConfig) validate() error {
 	return nil
 }
 
+// validate checks if the Metrics configuration is valid.
+// Currently always returns nil (no validation implemented).
 func (metrics_conf *MetricsConfig) validate() error {
 	return nil
 }
 
+// Validate performs validation on all configuration sections.
+// It checks Opencast, Display, and Metrics configurations, as well as
+// the main timeout and listen settings.
+// Returns a combined error of all validation failures, or nil if all are valid.
 func (conf *Config) Validate() error {
 	opencast_err := conf.Opencast.validate()
 
