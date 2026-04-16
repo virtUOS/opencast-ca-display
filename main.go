@@ -18,15 +18,12 @@ package main
 
 import (
 	"embed"
-	"encoding/json"
-	"fmt"
-	"io"
 	"io/fs"
 	"log"
 	"log/slog"
-	"net"
 	"net/http"
 	"opencast-ca-display/internal/config"
+	"opencast-ca-display/internal/endpoints"
 	"os"
 	"time"
 
@@ -158,170 +155,172 @@ func setupRouter() *gin.Engine {
 	}
 	r.StaticFS("/assets", http.FS(assets))
 
-	// Display Config
-	r.GET("/config", func(c *gin.Context) {
-		c.JSON(http.StatusOK, cConfig.Display)
-	})
+	endpoints.ApiRouter(r.Group("/"))
 
-	// Status
-	r.GET("/status", func(c *gin.Context) {
-		client := &http.Client{Timeout: time.Duration(cConfig.Timeout * int(time.Millisecond))}
-		url := cConfig.Opencast.URL + "/capture-admin/agents/" + cConfig.Opencast.Agent + ".json"
-		req, err := http.NewRequest("GET", url, nil)
-		if err != nil {
-			log.Println(err)
-			c.JSON(http.StatusInternalServerError, nil)
-			stateCollector.WithLabelValues("internal_server_error").Set(1)
-			return
-		}
-		req.SetBasicAuth(cConfig.Opencast.Username, cConfig.Opencast.Password)
-		resp, err := client.Do(req)
-		lastUpdate = time.Now()
-		if err != nil {
-			if os.IsTimeout(err) {
-				log.Println("Request timed out:", err)
-				c.JSON(http.StatusGatewayTimeout, gin.H{"error": "Request timed out"})
-				stateCollector.WithLabelValues("gateway_timeout").Set(1)
-			} else {
-				log.Println(err)
-				c.JSON(http.StatusBadGateway, gin.H{"error": "Internal server error"})
-				stateCollector.WithLabelValues("internal_server_error").Set(1)
-			}
-			return
-		}
+	// // Display Config
+	// r.GET("/config", func(c *gin.Context) {
+	// 	c.JSON(http.StatusOK, cConfig.Display)
+	// })
 
-		if resp.StatusCode != 200 {
-			log.Println(resp)
-			c.JSON(resp.StatusCode, nil)
-			stateCollector.WithLabelValues(fmt.Sprintf("%d", resp.StatusCode)).Set(1)
-			return
-		}
+	// // Status
+	// r.GET("/status", func(c *gin.Context) {
+	// 	client := &http.Client{Timeout: time.Duration(cConfig.Timeout * int(time.Millisecond))}
+	// 	url := cConfig.Opencast.URL + "/capture-admin/agents/" + cConfig.Opencast.Agent + ".json"
+	// 	req, err := http.NewRequest("GET", url, nil)
+	// 	if err != nil {
+	// 		log.Println(err)
+	// 		c.JSON(http.StatusInternalServerError, nil)
+	// 		stateCollector.WithLabelValues("internal_server_error").Set(1)
+	// 		return
+	// 	}
+	// 	req.SetBasicAuth(cConfig.Opencast.Username, cConfig.Opencast.Password)
+	// 	resp, err := client.Do(req)
+	// 	lastUpdate = time.Now()
+	// 	if err != nil {
+	// 		if os.IsTimeout(err) {
+	// 			log.Println("Request timed out:", err)
+	// 			c.JSON(http.StatusGatewayTimeout, gin.H{"error": "Request timed out"})
+	// 			stateCollector.WithLabelValues("gateway_timeout").Set(1)
+	// 		} else {
+	// 			log.Println(err)
+	// 			c.JSON(http.StatusBadGateway, gin.H{"error": "Internal server error"})
+	// 			stateCollector.WithLabelValues("internal_server_error").Set(1)
+	// 		}
+	// 		return
+	// 	}
 
-		bodyText, err := io.ReadAll(resp.Body)
-		if err != nil {
-			log.Println(err)
-			c.JSON(http.StatusInternalServerError, nil)
-			stateCollector.WithLabelValues("internal_server_error").Set(1)
-			return
-		}
-		s := string(bodyText)
-		var result AgentStateResult
-		jsonErr := json.Unmarshal([]byte(s), &result)
+	// 	if resp.StatusCode != 200 {
+	// 		log.Println(resp)
+	// 		c.JSON(resp.StatusCode, nil)
+	// 		stateCollector.WithLabelValues(fmt.Sprintf("%d", resp.StatusCode)).Set(1)
+	// 		return
+	// 	}
 
-		if jsonErr != nil {
-			log.Println(err)
-			c.JSON(http.StatusInternalServerError, nil)
-			stateCollector.WithLabelValues("internal_server_error").Set(1)
-			return
-		}
+	// 	bodyText, err := io.ReadAll(resp.Body)
+	// 	if err != nil {
+	// 		log.Println(err)
+	// 		c.JSON(http.StatusInternalServerError, nil)
+	// 		stateCollector.WithLabelValues("internal_server_error").Set(1)
+	// 		return
+	// 	}
+	// 	s := string(bodyText)
+	// 	var result AgentStateResult
+	// 	jsonErr := json.Unmarshal([]byte(s), &result)
 
-		stateCollector.Reset()
-		stateCollector.WithLabelValues(result.Update.State).Set(1)
+	// 	if jsonErr != nil {
+	// 		log.Println(err)
+	// 		c.JSON(http.StatusInternalServerError, nil)
+	// 		stateCollector.WithLabelValues("internal_server_error").Set(1)
+	// 		return
+	// 	}
 
-		c.JSON(http.StatusOK, result.Update.State == "capturing")
-	})
+	// 	stateCollector.Reset()
+	// 	stateCollector.WithLabelValues(result.Update.State).Set(1)
 
-	r.GET("/calendar", func(c *gin.Context) {
-		client := &http.Client{Timeout: time.Duration(cConfig.Timeout * int(time.Millisecond))}
-		// Cutoff is set to 24 hours from now
-		cutoff := time.Now().UnixMilli() + 86400000
-		url := cConfig.Opencast.URL + "/recordings/calendar.json?agentid=" + cConfig.Opencast.Agent + "&cutoff=" + fmt.Sprint(cutoff) + "&timestamp=true"
-		req, err := http.NewRequest("GET", url, nil)
-		if err != nil {
-			log.Println(err)
-			c.JSON(http.StatusBadGateway, nil)
-			return
-		}
-		req.SetBasicAuth(cConfig.Opencast.Username, cConfig.Opencast.Password)
-		resp, err := client.Do(req)
-		if err != nil {
-			if os.IsTimeout(err) {
-				log.Println("Request timed out:", err)
-				c.JSON(http.StatusGatewayTimeout, gin.H{"error": "Request timed out"})
-				stateCollector.WithLabelValues("gateway_timeout").Set(1)
-			} else {
-				log.Println(err)
-				c.JSON(http.StatusBadGateway, gin.H{"error": "Internal server error"})
-				stateCollector.WithLabelValues("internal_server_error").Set(1)
-			}
-			return
-		}
-		if resp.StatusCode != 200 {
-			log.Println(resp)
-			c.JSON(resp.StatusCode, nil)
-			return
-		}
+	// 	c.JSON(http.StatusOK, result.Update.State == "capturing")
+	// })
 
-		bodyText, err := io.ReadAll(resp.Body)
-		if err != nil {
-			log.Println(err)
-			c.JSON(http.StatusBadGateway, nil)
-			return
-		}
-		s := string([]byte(bodyText))
+	// r.GET("/calendar", func(c *gin.Context) {
+	// 	client := &http.Client{Timeout: time.Duration(cConfig.Timeout * int(time.Millisecond))}
+	// 	// Cutoff is set to 24 hours from now
+	// 	cutoff := time.Now().UnixMilli() + 86400000
+	// 	url := cConfig.Opencast.URL + "/recordings/calendar.json?agentid=" + cConfig.Opencast.Agent + "&cutoff=" + fmt.Sprint(cutoff) + "&timestamp=true"
+	// 	req, err := http.NewRequest("GET", url, nil)
+	// 	if err != nil {
+	// 		log.Println(err)
+	// 		c.JSON(http.StatusBadGateway, nil)
+	// 		return
+	// 	}
+	// 	req.SetBasicAuth(cConfig.Opencast.Username, cConfig.Opencast.Password)
+	// 	resp, err := client.Do(req)
+	// 	if err != nil {
+	// 		if os.IsTimeout(err) {
+	// 			log.Println("Request timed out:", err)
+	// 			c.JSON(http.StatusGatewayTimeout, gin.H{"error": "Request timed out"})
+	// 			stateCollector.WithLabelValues("gateway_timeout").Set(1)
+	// 		} else {
+	// 			log.Println(err)
+	// 			c.JSON(http.StatusBadGateway, gin.H{"error": "Internal server error"})
+	// 			stateCollector.WithLabelValues("internal_server_error").Set(1)
+	// 		}
+	// 		return
+	// 	}
+	// 	if resp.StatusCode != 200 {
+	// 		log.Println(resp)
+	// 		c.JSON(resp.StatusCode, nil)
+	// 		return
+	// 	}
 
-		var allEvents []CalendarEntry
-		json_err := json.Unmarshal([]byte(s), &allEvents)
-		if json_err != nil {
-			log.Fatal(json_err)
-		}
+	// 	bodyText, err := io.ReadAll(resp.Body)
+	// 	if err != nil {
+	// 		log.Println(err)
+	// 		c.JSON(http.StatusBadGateway, nil)
+	// 		return
+	// 	}
+	// 	s := string([]byte(bodyText))
 
-		var events []Event
-		for _, eventData := range allEvents {
-			start := eventData.Data.StartDate
-			end := eventData.Data.EndDate
-			title := eventData.Data.AgentConfig.EventTitle
-			e := Event{Title: title, Start: start, End: end}
-			events = append(events, e)
-		}
+	// 	var allEvents []CalendarEntry
+	// 	json_err := json.Unmarshal([]byte(s), &allEvents)
+	// 	if json_err != nil {
+	// 		log.Fatal(json_err)
+	// 	}
 
-		if len(allEvents) > 0 {
-			fmt.Println(events)
-			c.JSON(http.StatusOK, events)
-		} else {
-			c.JSON(http.StatusOK, "")
-		}
-	})
+	// 	var events []Event
+	// 	for _, eventData := range allEvents {
+	// 		start := eventData.Data.StartDate
+	// 		end := eventData.Data.EndDate
+	// 		title := eventData.Data.AgentConfig.EventTitle
+	// 		e := Event{Title: title, Start: start, End: end}
+	// 		events = append(events, e)
+	// 	}
 
-	r.GET("/network_info", func(c *gin.Context) {
-		var net_status NetworkStatus
-		net_interfaces, err := net.Interfaces()
-		if err != nil {
-			log.Fatalln("Network devices could not be loaded.")
-			return
-		}
-		for _, net_inter := range net_interfaces {
-			addrs, err := net_inter.Addrs()
-			var addrs_str []string
-			if err == nil {
-				for _, a := range addrs {
-					addrs_str = append(addrs_str, a.String())
-				}
-			}
-			inter := NetInterface{Name: net_inter.Name, MAC: net_inter.HardwareAddr.String(), Adress: addrs_str, Flags: net_inter.Flags.String()}
-			net_status.Interfaces = append(net_status.Interfaces, inter)
-		}
-		client := &http.Client{Timeout: time.Duration(cConfig.Timeout * int(time.Millisecond))}
-		url := cConfig.Opencast.URL
-		req, err := http.NewRequest("GET", url, nil)
-		if err != nil {
-			log.Println(err)
-			c.JSON(http.StatusBadGateway, nil)
-			return
-		}
-		// req.SetBasicAuth(cConfig.Opencast.Username, cConfig.Opencast.Password)
-		_, err = client.Do(req)
-		if err != nil {
-			net_status.Connected = false
-		} else {
-			net_status.Connected = true
-		}
-		net_status.Hostname, err = os.Hostname()
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, nil)
-		}
-		c.JSON(http.StatusOK, net_status)
-	})
+	// 	if len(allEvents) > 0 {
+	// 		fmt.Println(events)
+	// 		c.JSON(http.StatusOK, events)
+	// 	} else {
+	// 		c.JSON(http.StatusOK, "")
+	// 	}
+	// })
+
+	// r.GET("/network_info", func(c *gin.Context) {
+	// 	var net_status NetworkStatus
+	// 	net_interfaces, err := net.Interfaces()
+	// 	if err != nil {
+	// 		log.Fatalln("Network devices could not be loaded.")
+	// 		return
+	// 	}
+	// 	for _, net_inter := range net_interfaces {
+	// 		addrs, err := net_inter.Addrs()
+	// 		var addrs_str []string
+	// 		if err == nil {
+	// 			for _, a := range addrs {
+	// 				addrs_str = append(addrs_str, a.String())
+	// 			}
+	// 		}
+	// 		inter := NetInterface{Name: net_inter.Name, MAC: net_inter.HardwareAddr.String(), Adress: addrs_str, Flags: net_inter.Flags.String()}
+	// 		net_status.Interfaces = append(net_status.Interfaces, inter)
+	// 	}
+	// 	client := &http.Client{Timeout: time.Duration(cConfig.Timeout * int(time.Millisecond))}
+	// 	url := cConfig.Opencast.URL
+	// 	req, err := http.NewRequest("GET", url, nil)
+	// 	if err != nil {
+	// 		log.Println(err)
+	// 		c.JSON(http.StatusBadGateway, nil)
+	// 		return
+	// 	}
+	// 	// req.SetBasicAuth(cConfig.Opencast.Username, cConfig.Opencast.Password)
+	// 	_, err = client.Do(req)
+	// 	if err != nil {
+	// 		net_status.Connected = false
+	// 	} else {
+	// 		net_status.Connected = true
+	// 	}
+	// 	net_status.Hostname, err = os.Hostname()
+	// 	if err != nil {
+	// 		c.JSON(http.StatusInternalServerError, nil)
+	// 	}
+	// 	c.JSON(http.StatusOK, net_status)
+	// })
 
 	return r
 }
