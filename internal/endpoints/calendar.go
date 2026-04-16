@@ -1,13 +1,9 @@
 package endpoints
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
-	"log"
 	"net/http"
-	"opencast-ca-display/internal/metrics"
-	"os"
+	"opencast-ca-display/internal/opencast"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -51,62 +47,86 @@ type CalendarEntry struct {
 }
 
 func calendarEndpoint(c *gin.Context) {
-	client := &http.Client{Timeout: time.Duration(localConfig.Timeout * int(time.Millisecond))}
-	// Cutoff is set to 3 day from now; TODO: set back to 24 Hours
-	cutoff := time.Now().Add(time.Hour * 720).UnixMilli()
-	url := localConfig.Opencast.URL + "/recordings/calendar.json?agentid=" + localConfig.Opencast.Agent + "&cutoff=" + fmt.Sprint(cutoff) + "&timestamp=true"
-	req, err := http.NewRequest("GET", url, nil)
+	allEvents, err := opencast.Events.GetUpcommingEvents(localConfig.Opencast.Agent, time.Duration(time.Hour*720))
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadGateway, nil)
-		return
-	}
-	req.SetBasicAuth(localConfig.Opencast.Username, localConfig.Opencast.Password)
-	resp, err := client.Do(req)
-	if err != nil {
-		if os.IsTimeout(err) {
-			log.Println("Request timed out:", err)
-			c.JSON(http.StatusGatewayTimeout, gin.H{"error": "Request timed out"})
-			metrics.UpdateState("request_timed_out")
-		} else {
-			log.Println(err)
-			c.JSON(http.StatusBadGateway, gin.H{"error": "Internal server error"})
-			// stateCollector.WithLabelValues("internal_server_error").Set(1)
-			metrics.UpdateState("internal_server_error")
-		}
-		return
-	}
-	if resp.StatusCode != 200 {
-		log.Println(resp)
-		c.JSON(resp.StatusCode, nil)
+		fmt.Printf("Error while getting upcomming events: %s\n", err.Error())
+		c.JSON(http.StatusBadGateway, gin.H{"error": "Internal server error"})
 		return
 	}
 
-	bodyText, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadGateway, nil)
-		return
-	}
-	s := string([]byte(bodyText))
+	// client := &http.Client{Timeout: time.Duration(localConfig.Timeout * int(time.Millisecond))}
+	// // Cutoff is set to 3 day from now; TODO: set back to 24 Hours
+	// cutoff := time.Now().Add(time.Hour * 720).UnixMilli()
+	// url := localConfig.Opencast.URL + "/recordings/calendar.json?agentid=" + localConfig.Opencast.Agent + "&cutoff=" + fmt.Sprint(cutoff) + "&timestamp=true"
+	// req, err := http.NewRequest("GET", url, nil)
+	// if err != nil {
+	// 	log.Println(err)
+	// 	c.JSON(http.StatusBadGateway, nil)
+	// 	return
+	// }
+	// req.SetBasicAuth(localConfig.Opencast.Username, localConfig.Opencast.Password)
+	// resp, err := client.Do(req)
+	// if err != nil {
+	// 	if os.IsTimeout(err) {
+	// 		log.Println("Request timed out:", err)
+	// 		c.JSON(http.StatusGatewayTimeout, gin.H{"error": "Request timed out"})
+	// 		metrics.UpdateState("request_timed_out")
+	// 	} else {
+	// 		log.Println(err)
+	// 		c.JSON(http.StatusBadGateway, gin.H{"error": "Internal server error"})
+	// 		// stateCollector.WithLabelValues("internal_server_error").Set(1)
+	// 		metrics.UpdateState("internal_server_error")
+	// 	}
+	// 	return
+	// }
+	// if resp.StatusCode != 200 {
+	// 	log.Println(resp)
+	// 	c.JSON(resp.StatusCode, nil)
+	// 	return
+	// }
 
-	var allEvents []CalendarEntry
-	json_err := json.Unmarshal([]byte(s), &allEvents)
-	if json_err != nil {
-		log.Fatal(json_err)
-	}
+	// bodyText, err := io.ReadAll(resp.Body)
+	// if err != nil {
+	// 	log.Println(err)
+	// 	c.JSON(http.StatusBadGateway, nil)
+	// 	return
+	// }
+	// s := string([]byte(bodyText))
+
+	// var allEvents []CalendarEntry
+	// json_err := json.Unmarshal([]byte(s), &allEvents)
+	// if json_err != nil {
+	// 	log.Fatal(json_err)
+	// }
+
+	// var events []Event
+	// for _, eventData := range allEvents {
+	// 	start := eventData.Data.StartDate
+	// 	end := eventData.Data.EndDate
+	// 	title := eventData.Data.AgentConfig.EventTitle
+	// 	e := Event{Title: title, Start: start, End: end}
+	// 	events = append(events, e)
+	// }
 
 	var events []Event
 	for _, eventData := range allEvents {
-		start := eventData.Data.StartDate
-		end := eventData.Data.EndDate
-		title := eventData.Data.AgentConfig.EventTitle
-		e := Event{Title: title, Start: start, End: end}
+		fmt.Println(eventData.Scheduling.Start)
+		start, err := time.Parse(time.RFC3339, eventData.Scheduling.Start)
+		if err != nil {
+			println("Failed to parse start time")
+			return
+		}
+		end, err := time.Parse(time.RFC3339, eventData.Scheduling.End)
+		if err != nil {
+			println("Failed to parse end time")
+			return
+		}
+		title := eventData.Title
+		e := Event{Title: title, Start: int(start.UnixMilli()), End: int(end.UnixMilli())}
 		events = append(events, e)
 	}
 
-	if len(allEvents) > 0 {
-		fmt.Println(events)
+	if len(events) > 0 {
 		c.JSON(http.StatusOK, events)
 	} else {
 		c.JSON(http.StatusOK, "")
