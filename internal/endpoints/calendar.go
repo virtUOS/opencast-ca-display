@@ -52,7 +52,7 @@ type CalendarEntry struct {
 func calendarEndpoint(c *gin.Context) {
 	client := &http.Client{Timeout: time.Duration(localConfig.Timeout * int(time.Millisecond))}
 	// Cutoff is set to 3 day from now; TODO: set back to 24 Hours
-	cutoff := time.Now().Add(time.Hour*720).UnixMilli()
+	cutoff := time.Now().Add(time.Hour * 720).UnixMilli()
 	url := localConfig.Opencast.URL + "/recordings/calendar.json?agentid=" + localConfig.Opencast.Agent + "&cutoff=" + fmt.Sprint(cutoff) + "&timestamp=true"
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
