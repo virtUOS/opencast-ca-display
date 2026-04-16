@@ -8,18 +8,18 @@ type OpencastConfig struct {
 }
 
 type DisplayStateConfig struct {
-	Text       string `yaml:"text"`
-	Color      string `yaml:"color"`
-	Background string `yaml:"background"`
-	Image      string `yaml:"image"`
-	Info       string `yaml:"info"`
-	Empty      string `yaml:"none"`
+	Text       string `yaml:"text" json:"text"`
+	Color      string `yaml:"color" json:"color"`
+	Background string `yaml:"background" json:"background"`
+	Image      string `yaml:"image" json:"image"`
+	Info       string `yaml:"info" json:"info"`
+	Empty      string `yaml:"none" json:"empty"`
 }
 
 type DisplayConfig struct {
-	Capturing DisplayStateConfig `yaml:"capturing"`
-	Idle      DisplayStateConfig `yaml:"idle"`
-	Unknown   DisplayStateConfig `yaml:"unknown"`
+	Capturing DisplayStateConfig `yaml:"capturing" json:"capturing"`
+	Idle      DisplayStateConfig `yaml:"idle" json:"idle"`
+	Unknown   DisplayStateConfig `yaml:"unknown" json:"unknown"`
 }
 
 type MetricsConfig struct {
