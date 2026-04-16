@@ -351,6 +351,9 @@ func main() {
 	slog.SetDefault(logger)
 
 	cConfig, err := cConfig.LoadFromFile("opencast-ca-display.yml")
+
+	config.SetConfig(cConfig)
+	
 	if err != nil {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}

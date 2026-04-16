@@ -3,9 +3,20 @@ package config
 import (
 	"log/slog"
 	"os"
+	"sync/atomic"
 
 	"gopkg.in/yaml.v3"
 )
+
+var defaultConfig atomic.Pointer[Config]
+
+func init() {
+	defaultConfig.Store(New())
+}
+
+func New() *Config {
+	return &Config{}
+}
 
 // LoadFromFile loads the configuration from a YAML file at the given path.
 // It validates and serializes the configuration after loading.
@@ -34,4 +45,12 @@ func (conf *Config) LoadFromFile(path string) (*Config, error) {
 	slog.Info("Finished loading configuration from file")
 
 	return conf, nil
+}
+
+func SetConfig(c *Config){
+	defaultConfig.Store(c)
+}
+
+func Default() *Config {
+	return defaultConfig.Load()
 }
