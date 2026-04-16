@@ -1,8 +1,11 @@
 package endpoints
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+)
 
-func SetupRouter(group gin.RouterGroup) {
+func ApiRouter(group *gin.RouterGroup) { // TODO
+
 	// status Endpoint
 	group.GET("/status", statusEndpoint)
 
