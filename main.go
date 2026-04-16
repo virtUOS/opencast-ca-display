@@ -19,19 +19,18 @@ package main
 import (
 	"embed"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"io/fs"
 	"log"
+	"log/slog"
 	"net"
 	"net/http"
+	"opencast-ca-display/internal/config"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"gopkg.in/yaml.v3"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -82,15 +81,6 @@ type CalendarEntry struct {
 	EpisodeDublinCore string       `json:"episode-dublincore"`
 }
 
-type DisplayConfig struct {
-	Text       string `json:"text"`
-	Color      string `json:"color"`
-	Background string `json:"background"`
-	Image      string `json:"image"`
-	Info       string `json:"info"`
-	Empty      string `json:"none"`
-}
-
 type NetworkStatus struct {
 	Interfaces []NetInterface `json:"interfaces"`
 	Connected  bool           `json:"connected"`
@@ -104,31 +94,8 @@ type NetInterface struct {
 	Flags  string   `json:"flags"`
 }
 
-type Config struct {
-	Opencast struct {
-		Url      string
-		Username string
-		Password string
-		Agent    string
-	}
-
-	Display struct {
-		Capturing DisplayConfig `json:"capturing"`
-		Idle      DisplayConfig `json:"idle"`
-		Unknown   DisplayConfig `json:"unknown"`
-	}
-
-	Listen  string
-	Timeout int
-
-	Metrics struct {
-		Prometheus bool
-		Listen     string
-	}
-}
-
 var (
-	config Config
+	cConfig config.Config
 
 	//go:embed assets
 	res embed.FS
@@ -170,40 +137,6 @@ var (
 	}, []string{"state"})
 )
 
-func loadConfig(configPath string) (*Config, error) {
-	// Open config file
-	yamlFile, err := os.ReadFile(configPath)
-	if err != nil {
-		return nil, err
-	}
-
-	// Decode YAML file
-	if err := yaml.Unmarshal(yamlFile, &config); err != nil {
-		return nil, err
-	}
-
-	// Ensure URL does not have trailing /
-	config.Opencast.Url = strings.Trim(config.Opencast.Url, "/")
-	if config.Opencast.Url == "" {
-		return nil, errors.New("no Opencast server URL in configuration")
-	}
-
-	if config.Listen == "" {
-		config.Listen = "127.0.0.1:8080"
-	}
-
-	if config.Metrics.Listen == "" {
-		config.Metrics.Listen = "0.0.0.0:9100"
-	}
-
-	if config.Timeout == 0 {
-		// Timeout in Milliseconds
-		config.Timeout = 500
-	}
-
-	return &config, nil
-}
-
 func setupRouter() *gin.Engine {
 	r := gin.Default()
 	// disable all proxies
@@ -227,13 +160,13 @@ func setupRouter() *gin.Engine {
 
 	// Display Config
 	r.GET("/config", func(c *gin.Context) {
-		c.JSON(http.StatusOK, config.Display)
+		c.JSON(http.StatusOK, cConfig.Display)
 	})
 
 	// Status
 	r.GET("/status", func(c *gin.Context) {
-		client := &http.Client{Timeout: time.Duration(config.Timeout * int(time.Millisecond))}
-		url := config.Opencast.Url + "/capture-admin/agents/" + config.Opencast.Agent + ".json"
+		client := &http.Client{Timeout: time.Duration(cConfig.Timeout * int(time.Millisecond))}
+		url := cConfig.Opencast.URL + "/capture-admin/agents/" + cConfig.Opencast.Agent + ".json"
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
 			log.Println(err)
@@ -241,7 +174,7 @@ func setupRouter() *gin.Engine {
 			stateCollector.WithLabelValues("internal_server_error").Set(1)
 			return
 		}
-		req.SetBasicAuth(config.Opencast.Username, config.Opencast.Password)
+		req.SetBasicAuth(cConfig.Opencast.Username, cConfig.Opencast.Password)
 		resp, err := client.Do(req)
 		lastUpdate = time.Now()
 		if err != nil {
@@ -289,17 +222,17 @@ func setupRouter() *gin.Engine {
 	})
 
 	r.GET("/calendar", func(c *gin.Context) {
-		client := &http.Client{Timeout: time.Duration(config.Timeout * int(time.Millisecond))}
+		client := &http.Client{Timeout: time.Duration(cConfig.Timeout * int(time.Millisecond))}
 		// Cutoff is set to 24 hours from now
 		cutoff := time.Now().UnixMilli() + 86400000
-		url := config.Opencast.Url + "/recordings/calendar.json?agentid=" + config.Opencast.Agent + "&cutoff=" + fmt.Sprint(cutoff) + "&timestamp=true"
+		url := cConfig.Opencast.URL + "/recordings/calendar.json?agentid=" + cConfig.Opencast.Agent + "&cutoff=" + fmt.Sprint(cutoff) + "&timestamp=true"
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
 			log.Println(err)
 			c.JSON(http.StatusBadGateway, nil)
 			return
 		}
-		req.SetBasicAuth(config.Opencast.Username, config.Opencast.Password)
+		req.SetBasicAuth(cConfig.Opencast.Username, cConfig.Opencast.Password)
 		resp, err := client.Do(req)
 		if err != nil {
 			if os.IsTimeout(err) {
@@ -368,15 +301,15 @@ func setupRouter() *gin.Engine {
 			inter := NetInterface{Name: net_inter.Name, MAC: net_inter.HardwareAddr.String(), Adress: addrs_str, Flags: net_inter.Flags.String()}
 			net_status.Interfaces = append(net_status.Interfaces, inter)
 		}
-		client := &http.Client{Timeout: time.Duration(config.Timeout * int(time.Millisecond))}
-		url := config.Opencast.Url
+		client := &http.Client{Timeout: time.Duration(cConfig.Timeout * int(time.Millisecond))}
+		url := cConfig.Opencast.URL
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
 			log.Println(err)
 			c.JSON(http.StatusBadGateway, nil)
 			return
 		}
-		// req.SetBasicAuth(config.Opencast.Username, config.Opencast.Password)
+		// req.SetBasicAuth(cConfig.Opencast.Username, cConfig.Opencast.Password)
 		_, err = client.Do(req)
 		if err != nil {
 			net_status.Connected = false
@@ -410,20 +343,29 @@ func setupMetricsRouter() *gin.Engine {
 }
 
 func main() {
-	if _, err := loadConfig("opencast-ca-display.yml"); err != nil {
+	// if _, err := loadConfig("opencast-ca-display.yml"); err != nil {
+	// 	log.Fatalf("Failed to load configuration: %v", err)
+	// }
+
+	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
+	slog.SetDefault(logger)
+
+	cConfig, err := cConfig.LoadFromFile("opencast-ca-display.yml")
+	if err != nil {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
-	if config.Metrics.Prometheus {
+
+	if cConfig.Metrics.Enable {
 		go func() {
 			metricsRouter := setupMetricsRouter()
-			if err := metricsRouter.Run(config.Metrics.Listen); err != nil {
+			if err := metricsRouter.Run(cConfig.Metrics.Listen); err != nil {
 				log.Fatalf("Failed to run metrics server: %v", err)
 			}
 		}()
 	}
 
 	r := setupRouter()
-	if err := r.Run(config.Listen); err != nil {
+	if err := r.Run(cConfig.Listen); err != nil {
 		log.Fatalf("Failed to run server: %v", err)
 	}
 }
