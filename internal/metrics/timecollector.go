@@ -18,6 +18,9 @@ func (c *myCollector) Describe(ch chan<- *prometheus.Desc) {
 
 func (c *myCollector) Collect(ch chan<- prometheus.Metric) {
 	t := lastUpdate
+	if t.IsZero() {
+		return
+	}
 	s := prometheus.NewMetricWithTimestamp(t, prometheus.MustNewConstMetric(c.metric, prometheus.CounterValue, float64(t.Unix())))
 	ch <- s
 }
@@ -33,6 +36,6 @@ var (
 	}
 )
 
-func (col Collector) UpdateTime() {
+func UpdateTime() {
 	lastUpdate = time.Now()
 }
