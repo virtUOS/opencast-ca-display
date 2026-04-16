@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"opencast-ca-display/internal/metrics"
 	"os"
 	"time"
 
@@ -66,11 +67,12 @@ func calendarEndpoint(c *gin.Context) {
 		if os.IsTimeout(err) {
 			log.Println("Request timed out:", err)
 			c.JSON(http.StatusGatewayTimeout, gin.H{"error": "Request timed out"})
-			// stateCollector.WithLabelValues("gateway_timeout").Set(1)
+			metrics.UpdateState("request_timed_out")
 		} else {
 			log.Println(err)
 			c.JSON(http.StatusBadGateway, gin.H{"error": "Internal server error"})
 			// stateCollector.WithLabelValues("internal_server_error").Set(1)
+			metrics.UpdateState("internal_server_error")
 		}
 		return
 	}

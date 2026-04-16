@@ -2,9 +2,11 @@ package endpoints
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"opencast-ca-display/internal/metrics"
 	"os"
 	"time"
 
@@ -27,20 +29,24 @@ func statusEndpoint(c *gin.Context) {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, nil)
 		// stateCollector.WithLabelValues("internal_server_error").Set(1)
+		metrics.UpdateState("internal_server_error")
 		return
 	}
 	req.SetBasicAuth(localConfig.Opencast.Username, localConfig.Opencast.Password)
 	resp, err := client.Do(req)
 	// lastUpdate = time.Now()
+	metrics.UpdateTime()
 	if err != nil {
 		if os.IsTimeout(err) {
 			log.Println("Request timed out:", err)
 			c.JSON(http.StatusGatewayTimeout, gin.H{"error": "Request timed out"})
 			// stateCollector.WithLabelValues("gateway_timeout").Set(1)
+			metrics.UpdateState("gateway_timeout")
 		} else {
 			log.Println(err)
 			c.JSON(http.StatusBadGateway, gin.H{"error": "Internal server error"})
 			// stateCollector.WithLabelValues("internal_server_error").Set(1)
+			metrics.UpdateState("internal_server_error")
 		}
 		return
 	}
@@ -49,6 +55,7 @@ func statusEndpoint(c *gin.Context) {
 		log.Println(resp)
 		c.JSON(resp.StatusCode, nil)
 		// stateCollector.WithLabelValues(fmt.Sprintf("%d", resp.StatusCode)).Set(1)
+		metrics.UpdateState(fmt.Sprintf("%d", resp.StatusCode))
 		return
 	}
 
@@ -57,6 +64,7 @@ func statusEndpoint(c *gin.Context) {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, nil)
 		// stateCollector.WithLabelValues("internal_server_error").Set(1)
+		metrics.UpdateState("internal_server_error")
 		return
 	}
 	s := string(bodyText)
@@ -67,11 +75,13 @@ func statusEndpoint(c *gin.Context) {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, nil)
 		// stateCollector.WithLabelValues("internal_server_error").Set(1)
+		metrics.UpdateState("internal_server_error")
 		return
 	}
 
 	// stateCollector.Reset()
 	// stateCollector.WithLabelValues(result.Update.State).Set(1)
+	metrics.UpdateState(result.Update.State)
 
 	c.JSON(http.StatusOK, result.Update.State == "capturing")
 }
