@@ -24,13 +24,11 @@ import (
 	"net/http"
 	"opencast-ca-display/internal/config"
 	"opencast-ca-display/internal/endpoints"
+	"opencast-ca-display/internal/metrics"
 	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
-
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 var (
@@ -42,38 +40,6 @@ var (
 
 var (
 	lastUpdate time.Time
-)
-
-type myCollector struct {
-	metric *prometheus.Desc
-}
-
-func (c *myCollector) Describe(ch chan<- *prometheus.Desc) {
-	ch <- c.metric
-}
-
-func (c *myCollector) Collect(ch chan<- prometheus.Metric) {
-	t := lastUpdate
-	s := prometheus.NewMetricWithTimestamp(t, prometheus.MustNewConstMetric(c.metric, prometheus.CounterValue, float64(t.Unix())))
-	ch <- s
-}
-
-var (
-	timeCollector = &myCollector{
-		metric: prometheus.NewDesc(
-			"last_update",
-			"Timestamp of last update from CaptureAgent",
-			nil,
-			nil,
-		),
-	}
-)
-
-var (
-	stateCollector = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "state",
-		Help: "State of the CaptureAgent",
-	}, []string{"state"})
 )
 
 func setupRouter() *gin.Engine {
@@ -102,21 +68,24 @@ func setupRouter() *gin.Engine {
 	return r
 }
 
-func init() {
-	prometheus.MustRegister(stateCollector)
-	prometheus.MustRegister(timeCollector)
-}
+// func init() {
+// 	// prometheus.MustRegister(stateCollector)
+// 	// prometheus.MustRegister(timeCollector)
 
-func setupMetricsRouter() *gin.Engine {
-	r := gin.Default()
-	// disable all proxies
-	err := r.SetTrustedProxies(nil)
-	if err != nil {
-		log.Fatalf("Failed to set trusted proxies: %v", err)
-	}
-	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
-	return r
-}
+// 			// metrics.RegisterMetrics()
+
+// }
+
+// func setupMetricsRouter() *gin.Engine {
+// 	r := gin.Default()
+// 	// disable all proxies
+// 	err := r.SetTrustedProxies(nil)
+// 	if err != nil {
+// 		log.Fatalf("Failed to set trusted proxies: %v", err)
+// 	}
+// 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
+// 	return r
+// }
 
 func main() {
 	// if _, err := loadConfig("opencast-ca-display.yml"); err != nil {
@@ -136,7 +105,7 @@ func main() {
 
 	if cConfig.Metrics.Enable {
 		go func() {
-			metricsRouter := setupMetricsRouter()
+			metricsRouter := metrics.SetupRouter()
 			if err := metricsRouter.Run(cConfig.Metrics.Listen); err != nil {
 				log.Fatalf("Failed to run metrics server: %v", err)
 			}
