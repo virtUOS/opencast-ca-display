@@ -1,6 +1,8 @@
 package metrics
 
-import "github.com/prometheus/client_golang/prometheus"
+import (
+	"github.com/prometheus/client_golang/prometheus"
+)
 
 var (
 	stateCollector = prometheus.NewGaugeVec(prometheus.GaugeOpts{
@@ -9,6 +11,10 @@ var (
 	}, []string{"state"})
 )
 
-func (col Collector) UpdateState(state string) {
+func UpdateState(state string) {
+	// Reset all states to 0 first
+	stateCollector.Reset()
+
+	// Set the current state to 1
 	stateCollector.WithLabelValues(state).Set(1)
 }
