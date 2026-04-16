@@ -81,15 +81,6 @@ type CalendarEntry struct {
 	EpisodeDublinCore string       `json:"episode-dublincore"`
 }
 
-// type DisplayConfig struct {
-// 	Text       string `json:"text"`
-// 	Color      string `json:"color"`
-// 	Background string `json:"background"`
-// 	Image      string `json:"image"`
-// 	Info       string `json:"info"`
-// 	Empty      string `json:"none"`
-// }
-
 type NetworkStatus struct {
 	Interfaces []NetInterface `json:"interfaces"`
 	Connected  bool           `json:"connected"`
@@ -102,29 +93,6 @@ type NetInterface struct {
 	MAC    string   `json:"mac_adress"`
 	Flags  string   `json:"flags"`
 }
-
-// type Config struct {
-// 	Opencast struct {
-// 		Url      string
-// 		Username string
-// 		Password string
-// 		Agent    string
-// 	}
-
-// 	Display struct {
-// 		Capturing DisplayConfig `json:"capturing"`
-// 		Idle      DisplayConfig `json:"idle"`
-// 		Unknown   DisplayConfig `json:"unknown"`
-// 	}
-
-// 	Listen  string
-// 	Timeout int
-
-// 	Metrics struct {
-// 		Prometheus bool
-// 		Listen     string
-// 	}
-// }
 
 var (
 	cConfig config.Config
@@ -168,40 +136,6 @@ var (
 		Help: "State of the CaptureAgent",
 	}, []string{"state"})
 )
-
-// func loadConfig(configPath string) (*config.Config, error) {
-// 	// Open config file
-// 	yamlFile, err := os.ReadFile(configPath)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	// Decode YAML file
-// 	if err := yaml.Unmarshal(yamlFile, &cConfig); err != nil {
-// 		return nil, err
-// 	}
-
-// 	// Ensure URL does not have trailing /
-// 	cConfig.Opencast.URL = strings.Trim(cConfig.Opencast.URL, "/")
-// 	if cConfig.Opencast.URL == "" {
-// 		return nil, errors.New("no Opencast server URL in configuration")
-// 	}
-
-// 	if cConfig.Listen == "" {
-// 		cConfig.Listen = "127.0.0.1:8080"
-// 	}
-
-// 	if cConfig.Metrics.Listen == "" {
-// 		cConfig.Metrics.Listen = "0.0.0.0:9100"
-// 	}
-
-// 	if cConfig.Timeout == 0 {
-// 		// Timeout in Milliseconds
-// 		cConfig.Timeout = 500
-// 	}
-
-// 	return &cConfig, nil
-// }
 
 func setupRouter() *gin.Engine {
 	r := gin.Default()
