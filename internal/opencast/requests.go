@@ -9,18 +9,20 @@ import (
 	"time"
 )
 
-// baseRequest performs an HTTP request to the specified path on the Opencast server.
+func (op_req OpencastRequester) Validate() error {
+	return nil
+}
+
+// baseRequest performs an HTTP request to the specified path with a query on the Opencast server.
 // It creates an HTTP client with the configured timeout and includes basic authentication.
 // Returns the HTTP response or an error if the request fails.
-func (op_req OpencastRequester) baseRequest(path string, request_type string) (*http.Response, error) {
+func (op_req OpencastRequester) baseRequestWithQuery(path string, query url.Values, request_type string) (*http.Response, error) {
 	client := &http.Client{Timeout: time.Duration(op_req.Timeout * int(time.Millisecond))}
 
-	url, err := url.JoinPath(op_req.URL.Host, path)
-	if err != nil {
-		return nil, errors.New("")
-	}
+	url := op_req.URL.JoinPath(path)
+	url.RawQuery = query.Encode()
 
-	req, err := http.NewRequest(request_type, url, nil)
+	req, err := http.NewRequest(request_type, url.String(), nil)
 
 	if err != nil {
 		return nil, errors.New("")
@@ -30,7 +32,14 @@ func (op_req OpencastRequester) baseRequest(path string, request_type string) (*
 
 	resp, err := client.Do(req)
 
-	return resp, nil
+	return resp, err
+}
+
+// baseRequest performs an HTTP request to the specified path on the Opencast server.
+// It creates an HTTP client with the configured timeout and includes basic authentication.
+// Returns the HTTP response or an error if the request fails.
+func (op_req OpencastRequester) baseRequest(path string, request_type string) (*http.Response, error) {
+	return op_req.baseRequestWithQuery(path, url.Values{}, request_type)
 }
 
 // GET performs an HTTP GET request to the specified path on the Opencast server.
@@ -47,10 +56,16 @@ func (op_req OpencastRequester) GET(path string) ([]byte, error) {
 	return bodyText, nil
 }
 
-func (op_req OpencastRequester) GetJSON(path string, data any) error {
-	resp, err := op_req.baseRequest(path, "GET")
+// Makes a request to the server with a query and directly parses the result in the specified JSON format
+func (op_req OpencastRequester) GetJSONwithQuery(path string, query url.Values, data any) error {
+	resp, err := op_req.baseRequestWithQuery(path, query, "GET")
+	if err != nil {
+		return err
+	}
 
+	defer resp.Body.Close()
 	bodyText, err := io.ReadAll(resp.Body)
+
 	if err != nil {
 		return err
 	}
@@ -61,6 +76,11 @@ func (op_req OpencastRequester) GetJSON(path string, data any) error {
 	}
 
 	return nil
+}
+
+// Makes a request to the server and directly parses the result in the specified JSON format
+func (op_req OpencastRequester) GetJSON(path string, data any) error {
+	return op_req.GetJSONwithQuery(path, url.Values{}, data)
 }
 
 // checkConnection tests if the Opencast server is reachable.
