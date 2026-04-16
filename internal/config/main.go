@@ -1,6 +1,7 @@
 package config
 
 import (
+	"log/slog"
 	"os"
 
 	"gopkg.in/yaml.v3"
@@ -29,6 +30,8 @@ func (conf *Config) LoadFromFile(path string) (*Config, error) {
 	if validation_err != nil {
 		return nil, validation_err
 	}
+
+	slog.Info("Finished loading configuration from file")
 
 	return conf, nil
 }

@@ -23,7 +23,7 @@ type DisplayConfig struct {
 }
 
 type MetricsConfig struct {
-	Enable bool   `yaml:"enable"`
+	Enable bool   `yaml:"prometheus"` // is currently still controlled through prometheus, TODO: change in future
 	Listen string `yaml:"listen"`
 }
 
