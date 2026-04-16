@@ -18,3 +18,7 @@ type OpencastAPI struct {
 type OpencastEventAPI struct {
 	requester *OpencastRequester
 }
+
+type OpencastAgentAPI struct {
+	requester *OpencastRequester
+}
