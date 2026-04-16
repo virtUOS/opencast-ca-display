@@ -22,9 +22,11 @@ import (
 	"log"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"opencast-ca-display/internal/config"
 	"opencast-ca-display/internal/endpoints"
 	"opencast-ca-display/internal/metrics"
+	"opencast-ca-display/internal/opencast"
 	"os"
 	"time"
 
@@ -97,11 +99,19 @@ func main() {
 
 	cConfig, err := cConfig.LoadFromFile("opencast-ca-display.yml")
 
-	config.SetConfig(cConfig)
-
 	if err != nil {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
+
+	config.SetConfig(cConfig)
+
+	url, err := url.Parse(cConfig.Opencast.URL)
+
+	if err != nil {
+		log.Fatalf("Coul not parse opencast URL")
+	}
+
+	opencast.Init(*url, cConfig.Opencast.Username, cConfig.Opencast.Password, cConfig.Timeout)
 
 	if cConfig.Metrics.Enable {
 		go func() {
