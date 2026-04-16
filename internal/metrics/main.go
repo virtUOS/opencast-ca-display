@@ -2,9 +2,7 @@ package metrics
 
 import "github.com/prometheus/client_golang/prometheus"
 
-type Collector struct{}
-
-func (col Collector) init() {
+func init() {
 	prometheus.MustRegister(timeCollector)
-	prometheus.MustRegister(timeCollector)
+	prometheus.MustRegister(stateCollector)
 }
