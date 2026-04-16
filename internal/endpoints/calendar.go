@@ -50,17 +50,17 @@ type CalendarEntry struct {
 }
 
 func calendarEndpoint(c *gin.Context) {
-	client := &http.Client{Timeout: time.Duration(config.Timeout * int(time.Millisecond))}
-	// Cutoff is set to 24 hours from now
-	cutoff := time.Now().UnixMilli() + 86400000
-	url := config.Opencast.Url + "/recordings/calendar.json?agentid=" + config.Opencast.Agent + "&cutoff=" + fmt.Sprint(cutoff) + "&timestamp=true"
+	client := &http.Client{Timeout: time.Duration(localConfig.Timeout * int(time.Millisecond))}
+	// Cutoff is set to 3 day from now; TODO: set back to 24 Hours
+	cutoff := time.Now().Add(time.Hour*720).UnixMilli()
+	url := localConfig.Opencast.URL + "/recordings/calendar.json?agentid=" + localConfig.Opencast.Agent + "&cutoff=" + fmt.Sprint(cutoff) + "&timestamp=true"
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadGateway, nil)
 		return
 	}
-	req.SetBasicAuth(config.Opencast.Username, config.Opencast.Password)
+	req.SetBasicAuth(localConfig.Opencast.Username, localConfig.Opencast.Password)
 	resp, err := client.Do(req)
 	if err != nil {
 		if os.IsTimeout(err) {

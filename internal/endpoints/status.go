@@ -20,8 +20,8 @@ type AgentStateResult struct {
 }
 
 func statusEndpoint(c *gin.Context) {
-	client := &http.Client{Timeout: time.Duration(config.Timeout * int(time.Millisecond))}
-	url := config.Opencast.Url + "/capture-admin/agents/" + config.Opencast.Agent + ".json"
+	client := &http.Client{Timeout: time.Duration(localConfig.Timeout * int(time.Millisecond))}
+	url := localConfig.Opencast.URL + "/capture-admin/agents/" + localConfig.Opencast.Agent + ".json"
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		log.Println(err)
@@ -29,7 +29,7 @@ func statusEndpoint(c *gin.Context) {
 		// stateCollector.WithLabelValues("internal_server_error").Set(1)
 		return
 	}
-	req.SetBasicAuth(config.Opencast.Username, config.Opencast.Password)
+	req.SetBasicAuth(localConfig.Opencast.Username, localConfig.Opencast.Password)
 	resp, err := client.Do(req)
 	// lastUpdate = time.Now()
 	if err != nil {

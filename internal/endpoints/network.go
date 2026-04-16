@@ -41,15 +41,15 @@ func networkEndpoint(c *gin.Context) {
 		inter := NetInterface{Name: net_inter.Name, MAC: net_inter.HardwareAddr.String(), Adress: addrs_str, Flags: net_inter.Flags.String()}
 		net_status.Interfaces = append(net_status.Interfaces, inter)
 	}
-	client := &http.Client{Timeout: time.Duration(config.Timeout * int(time.Millisecond))}
-	url := config.Opencast.Url
+	client := &http.Client{Timeout: time.Duration(localConfig.Timeout * int(time.Millisecond))}
+	url := localConfig.Opencast.URL
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadGateway, nil)
 		return
 	}
-	// req.SetBasicAuth(config.Opencast.Username, config.Opencast.Password)
+	// req.SetBasicAuth(localConfig.Opencast.Username, localConfig.Opencast.Password)
 	_, err = client.Do(req)
 	if err != nil {
 		net_status.Connected = false
