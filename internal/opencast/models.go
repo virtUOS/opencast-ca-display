@@ -2,6 +2,10 @@ package opencast
 
 import "net/url"
 
+var Agents agents
+
+var Events events
+
 type OpencastRequester struct {
 	URL      url.URL
 	Username string
@@ -12,13 +16,11 @@ type OpencastRequester struct {
 type OpencastAPI struct {
 	requester OpencastRequester
 
-	Events OpencastEventAPI
+	Events events
 }
 
-type OpencastEventAPI struct {
-	requester *OpencastRequester
+type events struct {
 }
 
-type OpencastAgentAPI struct {
-	requester *OpencastRequester
+type agents struct {
 }
