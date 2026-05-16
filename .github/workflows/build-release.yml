@@ -56,7 +56,7 @@ jobs:
       - run: file opencast-ca-display*
 
       - name: create new release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: opencast-ca-display*
           fail_on_unmatched_files: true
