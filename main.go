@@ -37,6 +37,12 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
+const (
+	majorVersion = 0
+	minorVersion = 1
+	patchVersion = 3
+)
+
 type AgentStateResult struct {
 	Update struct {
 		Name  string
@@ -125,6 +131,10 @@ type Config struct {
 		Prometheus bool
 		Listen     string
 	}
+
+	Version struct {
+		Installed int64
+	}
 }
 
 var (
@@ -152,6 +162,16 @@ func (c *myCollector) Collect(ch chan<- prometheus.Metric) {
 	ch <- s
 }
 
+type constCollector struct {
+	desc  *prometheus.Desc
+	value float64
+}
+
+func (c constCollector) Describe(ch chan<- *prometheus.Desc) { ch <- c.desc }
+func (c constCollector) Collect(ch chan<- prometheus.Metric) {
+	ch <- prometheus.MustNewConstMetric(c.desc, prometheus.GaugeValue, c.value)
+}
+
 var (
 	timeCollector = &myCollector{
 		metric: prometheus.NewDesc(
@@ -168,6 +188,45 @@ var (
 		Name: "state",
 		Help: "State of the CaptureAgent",
 	}, []string{"state"})
+)
+
+var (
+	versionCollectorMajor = constCollector{
+		desc: prometheus.NewDesc(
+			"version_info_major",
+			"Major Version number",
+			nil,
+			nil,
+		),
+		value: float64(majorVersion),
+	}
+
+	versionCollectorMinor = constCollector{
+		desc: prometheus.NewDesc(
+			"version_info_minor",
+			"Minor Version number",
+			nil,
+			nil,
+		),
+		value: float64(minorVersion),
+	}
+
+	versionCollectorPatch = constCollector{
+		desc: prometheus.NewDesc(
+			"version_info_patch",
+			"Patch Version number",
+			nil,
+			nil,
+		),
+		value: float64(patchVersion),
+	}
+)
+
+var (
+	installedCollector = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "installed_timestamp",
+		Help: "Timestamp when the software was installed",
+	})
 )
 
 func loadConfig(configPath string) (*Config, error) {
@@ -199,6 +258,11 @@ func loadConfig(configPath string) (*Config, error) {
 	if config.Timeout == 0 {
 		// Timeout in Milliseconds
 		config.Timeout = 500
+	}
+
+	// Set installed timestamp metric
+	if config.Version.Installed > 0 {
+		installedCollector.Set(float64(config.Version.Installed))
 	}
 
 	return &config, nil
@@ -396,6 +460,10 @@ func setupRouter() *gin.Engine {
 func init() {
 	prometheus.MustRegister(stateCollector)
 	prometheus.MustRegister(timeCollector)
+	prometheus.MustRegister(versionCollectorMajor)
+	prometheus.MustRegister(versionCollectorMinor)
+	prometheus.MustRegister(versionCollectorPatch)
+	prometheus.MustRegister(installedCollector)
 }
 
 func setupMetricsRouter() *gin.Engine {
